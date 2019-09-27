@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name" translatable="false">Zalo Maps</string>
+    <string name="message_permission_denied">You must allow all permission to use this app</string>
+    <string name="title_permission_denied">Permission denied</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="note">Note</string>
+
+    <string name="food_drink">Food and drink</string>
+    <string name="entertainment">Entertainment</string>
+    <string name="education">Education</string>
+    <string name="vehicle_repair">Vehicle repair</string>
+    <string name="religion">Religion</string>
+    <string name="administration">Administration</string>
+    <string name="gasoline">Gasoline</string>
+    <string name="other">Other</string>
+</resources>
