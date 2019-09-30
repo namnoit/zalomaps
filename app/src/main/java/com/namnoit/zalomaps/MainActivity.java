@@ -1,32 +1,32 @@
 package com.namnoit.zalomaps;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
+import android.graphics.drawable.VectorDrawable;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -34,11 +34,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.namnoit.zalomaps.data.PlacesDatabaseHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
@@ -53,16 +54,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         boolean permissionsAcepted = true;
-        for (int grantResult: grantResults){
-            if (grantResult < 0){
+        for (int grantResult : grantResults) {
+            if (grantResult < 0) {
                 permissionsAcepted = false;
             }
         }
-        if (permissionsAcepted){
+        if (permissionsAcepted) {
             map.setMyLocationEnabled(true);
-        }
-        else {
-            new MaterialAlertDialogBuilder(this,R.style.MaterialDialogStyle)
+        } else {
+            new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle)
                     .setTitle(R.string.title_permission_denied)
                     .setMessage(R.string.message_permission_denied)
                     .setCancelable(false)
@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private static final int PERMISSION_REQUEST_CODE = 1;
     private String[] appPermissions = {
-            Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
     @Override
@@ -90,8 +91,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,ListActivity.class);
+                startActivityForResult(intent,1);
+            }
+        });
         PlacesDatabaseHelper db = PlacesDatabaseHelper.getInstance(getApplicationContext());
-        db.getAllPlaces();
+
     }
 
     private void checkPermissions() {
@@ -108,7 +117,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         PERMISSION_REQUEST_CODE);
             }
             else {
+                // Zoom to my location
                 map.setMyLocationEnabled(true);
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                Location location = locationManager != null ? locationManager
+                        .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
+                if (location != null) {
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
+                    map.animateCamera(cameraUpdate, 1000, null);
+                }
             }
         }
     }
@@ -149,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map.animateCamera(cameraUpdate,500,null);
         map.addMarker(new MarkerOptions()
                 .position(latLng)
-                .icon(BitmapDescriptorFactory.defaultMarker(0))
+                .icon(vectorToBitmap(R.drawable.ic_marker_car_repair))
                 .title("Marker")
                 .snippet("Population: 4,137,400"));
     }
@@ -190,5 +208,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setView(view)
                 .setPositiveButton(R.string.ok,null)
                 .show();
+    }
+
+    private BitmapDescriptor vectorToBitmap(@DrawableRes int id) {
+        VectorDrawable vectorDrawable = (VectorDrawable) getDrawable(id);
+        int h = Objects.requireNonNull(vectorDrawable).getIntrinsicHeight();
+        int w = vectorDrawable.getIntrinsicWidth();
+        vectorDrawable.setBounds(0, 0, w, h);
+        Bitmap bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bm);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bm);
     }
 }

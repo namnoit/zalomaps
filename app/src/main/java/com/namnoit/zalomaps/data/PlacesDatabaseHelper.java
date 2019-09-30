@@ -9,8 +9,6 @@ import android.provider.BaseColumns;
 
 import androidx.annotation.Nullable;
 
-import com.google.android.material.textfield.TextInputEditText;
-
 import java.util.ArrayList;
 
 public class PlacesDatabaseHelper extends SQLiteOpenHelper {
@@ -95,6 +93,8 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOTE, place.getNote());
         values.put(COLUMN_TYPE, place.getType());
+        values.put(COLUMN_LATITUDE, place.getLatitude());
+        values.put(COLUMN_LONGITUDE, place.getLongtitude());
         values.put(COLUMN_TIME, place.getTime());
         db.insert(TABLE_PLACES,null,values);
         db.close();
@@ -104,6 +104,8 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_TYPE, place.getType());
+        values.put(COLUMN_LATITUDE, place.getLatitude());
+        values.put(COLUMN_LONGITUDE, place.getLongtitude());
         values.put(COLUMN_NOTE,place.getNote());
         values.put(COLUMN_TIME,place.getTime());
         db.update(TABLE_PLACES,

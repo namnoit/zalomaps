@@ -1,21 +1,21 @@
 package com.namnoit.zalomaps.data;
 
 public class PlaceModel {
-    public static final String TYPE_FOOD_DRINK = "1";
-    public static final String TYPE_ENTERTAINMENT = "2";
-    public static final String TYPE_EDUCATION = "3";
-    public static final String TYPE_VEHECLE_REPAIR = "4";
-    public static final String TYPE_RELIGION = "5";
-    public static final String TYPE_ADMINISTRAION = "6";
-    public static final String TYPE_GASOLINE = "7";
-    public static final String TYPE_OTHER = "8";
+    public static final int TYPE_FOOD_DRINK = 1;
+    public static final int TYPE_ENTERTAINMENT = 2;
+    public static final int TYPE_EDUCATION = 3;
+    public static final int TYPE_VEHICLE_REPAIR = 4;
+    public static final int TYPE_RELIGION = 5;
+    public static final int TYPE_ADMINISTRATION = 6;
+    public static final int TYPE_GASOLINE = 7;
+    public static final int TYPE_OTHER = 8;
 
     private int id;
     private int type;
     private String note;
     private long time;
-
     private double latitude, longitude;
+    private boolean choosen = true;
 
     public PlaceModel(int id, int type, double latitude, double longitude, String note, long time){
         this.id = id;
@@ -24,6 +24,7 @@ public class PlaceModel {
         this.longitude = longitude;
         this.note = note;
         this.time = time;
+        choosen = true;
     }
 
     public int getId() {
@@ -74,5 +75,11 @@ public class PlaceModel {
         this.time = time;
     }
 
+    public void setChoosen(boolean choosen) {
+        this.choosen = choosen;
+    }
 
+    public boolean isChoosen() {
+        return choosen;
+    }
 }
