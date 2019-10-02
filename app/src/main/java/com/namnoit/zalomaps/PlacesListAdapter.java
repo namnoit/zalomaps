@@ -44,35 +44,35 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
         switch (list.get(position).getType()){
             case PlaceModel.TYPE_FOOD_DRINK:
                 holder.category.setText(R.string.food_drink);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_food);
                 break;
             case PlaceModel.TYPE_ENTERTAINMENT:
                 holder.category.setText(R.string.entertainment);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_entertainment);
                 break;
             case PlaceModel.TYPE_EDUCATION:
                 holder.category.setText(R.string.education);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_education);
                 break;
             case PlaceModel.TYPE_VEHICLE_REPAIR:
                 holder.category.setText(R.string.vehicle_repair);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_car_repair);
                 break;
             case PlaceModel.TYPE_RELIGION:
                 holder.category.setText(R.string.religion);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_religion);
                 break;
             case PlaceModel.TYPE_ADMINISTRATION:
                 holder.category.setText(R.string.administration);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_administration);
                 break;
             case PlaceModel.TYPE_GASOLINE:
                 holder.category.setText(R.string.gasoline);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_gasoline);
                 break;
             case PlaceModel.TYPE_OTHER:
                 holder.category.setText(R.string.other);
-
+                holder.icon.setImageResource(R.drawable.ic_marker_other);
                 break;
         }
     }

@@ -20,14 +20,14 @@
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chips_filter"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:checkedChip="@id/chip_list_administration">
+            android:layout_height="wrap_content">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_list_food_drink"
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/food_drink" />
 
             <com.google.android.material.chip.Chip
@@ -35,6 +35,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/entertainment" />
 
             <com.google.android.material.chip.Chip
@@ -42,6 +43,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/education" />
 
             <com.google.android.material.chip.Chip
@@ -49,6 +51,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/vehicle_repair" />
 
             <com.google.android.material.chip.Chip
@@ -56,6 +59,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/religion" />
 
             <com.google.android.material.chip.Chip
@@ -63,6 +67,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/administration" />
 
             <com.google.android.material.chip.Chip
@@ -70,6 +75,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/gasoline" />
 
             <com.google.android.material.chip.Chip
@@ -77,6 +83,7 @@
                 style="@style/Widget.MaterialComponents.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/other" />
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
