@@ -1,5 +1,10 @@
 package com.namnoit.zalomaps.data;
 
+import android.app.Application;
+import android.content.Context;
+
+import com.namnoit.zalomaps.R;
+
 public class PlaceModel {
     public static final int TYPE_FOOD_DRINK = 1;
     public static final int TYPE_ENTERTAINMENT = 2;
@@ -15,7 +20,8 @@ public class PlaceModel {
     private String note;
     private long time;
     private double latitude, longitude;
-    private boolean choosen = true;
+    private boolean chosen;
+    private String markerId;
 
     public PlaceModel(int id, int type, double latitude, double longitude, String note, long time){
         this.id = id;
@@ -24,7 +30,49 @@ public class PlaceModel {
         this.longitude = longitude;
         this.note = note;
         this.time = time;
-        choosen = true;
+        chosen = true;
+    }
+
+    public static String getTypeInString(int type){
+        switch (type){
+            case TYPE_FOOD_DRINK:
+                return "Food and drink";
+            case TYPE_ENTERTAINMENT:
+                return "Entertainment";
+            case TYPE_EDUCATION:
+                return "Education";
+            case TYPE_VEHICLE_REPAIR:
+                return "Vehicle repair";
+            case TYPE_RELIGION:
+                return "Religion";
+            case TYPE_ADMINISTRATION:
+                return "Administration";
+            case TYPE_GASOLINE:
+                return "Gaslone";
+            default:
+                return "Other";
+        }
+    }
+
+    public static int getDrawableResource(int type){
+        switch (type){
+            case TYPE_FOOD_DRINK:
+                return R.drawable.ic_marker_food;
+            case TYPE_ENTERTAINMENT:
+                return R.drawable.ic_marker_entertainment;
+            case TYPE_EDUCATION:
+                return R.drawable.ic_marker_education;
+            case TYPE_VEHICLE_REPAIR:
+                return R.drawable.ic_marker_car_repair;
+            case TYPE_RELIGION:
+                return R.drawable.ic_marker_religion;
+            case TYPE_ADMINISTRATION:
+                return R.drawable.ic_marker_administration;
+            case TYPE_GASOLINE:
+                return R.drawable.ic_marker_gasoline;
+            default:
+                return R.drawable.ic_marker_other;
+        }
     }
 
     public int getId() {
@@ -75,11 +123,19 @@ public class PlaceModel {
         this.time = time;
     }
 
-    public void setChoosen(boolean choosen) {
-        this.choosen = choosen;
+    public void setChosen(boolean chosen) {
+        this.chosen = chosen;
     }
 
-    public boolean isChoosen() {
-        return choosen;
+    public boolean isChosen() {
+        return chosen;
+    }
+
+    public void setMarkerId(String markerId) {
+        this.markerId = markerId;
+    }
+
+    public String getMarkerId(){
+        return markerId;
     }
 }

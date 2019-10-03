@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.CompoundButton;
 
@@ -20,6 +21,7 @@ public class ListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+
 
         list = new ArrayList<>();
         list.add(new PlaceModel(1,
@@ -55,6 +57,10 @@ public class ListActivity extends AppCompatActivity {
         Chip chipReligion = findViewById(R.id.chip_list_religion);
         Chip chipVehicleRepair = findViewById(R.id.chip_list_vehicle_repair);
         Chip chipOther = findViewById(R.id.chip_list_other);
+        Intent intent = getIntent();
+        boolean[] choices = intent.getBooleanArrayExtra("choices");
+        if (choices!=null){
+        }
         chipFood.setOnCheckedChangeListener(chipCheckedListener);
         chipEntertainment.setOnCheckedChangeListener(chipCheckedListener);
         chipAdministration.setOnCheckedChangeListener(chipCheckedListener);
@@ -97,7 +103,7 @@ public class ListActivity extends AppCompatActivity {
             }
             for (PlaceModel place: list){
                 if (place.getType() == choice){
-                    place.setChoosen(isChecked);
+                    place.setChosen(isChecked);
                 }
             }
             adapter.notifyDataSetChanged();

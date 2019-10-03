@@ -14,4 +14,12 @@
     <string name="administration">Administration</string>
     <string name="gasoline">Gasoline</string>
     <string name="other">Other</string>
+    <string name="title_activity_bottom_nav">BottomNavActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="saved_places">Saved places</string>
+    <string name="maps">Maps</string>
+    <string name="map">Map</string>
+    <string name="delete">Delete</string>
 </resources>

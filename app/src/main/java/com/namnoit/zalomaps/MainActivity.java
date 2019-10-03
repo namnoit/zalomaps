@@ -18,6 +18,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -32,10 +33,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.namnoit.zalomaps.data.PlacesDatabaseHelper;
+import com.google.android.material.textfield.TextInputEditText;
+import com.namnoit.zalomaps.data.PlaceModel;
+import com.namnoit.zalomaps.data.PlacesListManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +50,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMyLocationClickListener,
-        GoogleMap.OnInfoWindowClickListener {
+        GoogleMap.OnMarkerClickListener {
     private GoogleMap map;
+    private PlacesListManager listManager;
+    private boolean[] choices = {
+            true, // Administration
+            true, // Education
+            true, // Entertainment
+            true, // Food and drink
+            true, // Gasoline
+            true, // Other
+            true, // Religion
+            true // Vehicle repair
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -96,10 +111,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(MainActivity.this,ListActivity.class);
+                intent.putExtra("choices",choices);
                 startActivityForResult(intent,1);
             }
         });
-        PlacesDatabaseHelper db = PlacesDatabaseHelper.getInstance(getApplicationContext());
+        listManager = PlacesListManager.getInstance(getApplicationContext());
 
     }
 
@@ -142,54 +158,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             map.setPadding(0,getResources().getDimensionPixelSize(resourceId),0,0);
         }
         map.getUiSettings().setTiltGesturesEnabled(false);
-        map.getUiSettings().setMapToolbarEnabled(true);
+        map.getUiSettings().setMapToolbarEnabled(false);
         map.getUiSettings().setMyLocationButtonEnabled(true);
-        map.getUiSettings().setZoomControlsEnabled(true);
+        map.getUiSettings().setZoomControlsEnabled(false);
         map.setOnMapClickListener(this);
         map.setOnMapLongClickListener(this);
         map.setOnMyLocationClickListener(this);
-        map.setOnInfoWindowClickListener(this);
+        map.setOnMarkerClickListener(this);
         showAllMarker();
     }
 
     private void showAllMarker() {
-
+        for (PlaceModel place: listManager.getPlacesList()){
+            if (place.isChosen()){
+                Marker marker = map.addMarker(new MarkerOptions()
+                        .position(new LatLng(place.getLatitude(),place.getLongtitude()))
+                        .icon(vectorToBitmap(PlaceModel.getDrawableResource(place.getType())))
+                        .title(PlaceModel.getTypeInString(place.getType()))
+                        .snippet(place.getNote()));
+                place.setMarkerId(marker.getId());
+            }
+        }
     }
 
     @Override
     public void onPoiClick(PointOfInterest pointOfInterest) {
-
+        addPlace(pointOfInterest.latLng);
     }
 
     @Override
     public void onMapClick(LatLng latLng) {
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
         map.animateCamera(cameraUpdate,500,null);
-        map.addMarker(new MarkerOptions()
-                .position(latLng)
-                .icon(vectorToBitmap(R.drawable.ic_marker_car_repair))
-                .title("Marker")
-                .snippet("Population: 4,137,400"));
     }
 
     @Override
-    public void onMapLongClick(LatLng latLng) {
-        map.addMarker(new MarkerOptions()
-                .position(latLng)
-                .icon(BitmapDescriptorFactory.defaultMarker(60))
-                .title("Marker")
-                .snippet("Haha"));
+    public void onMapLongClick(final LatLng latLng) {
+        addPlace(latLng);
     }
 
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
-        map.addMarker(new MarkerOptions()
-                .position(new LatLng(location.getLatitude(),location.getLongitude()))
-                .title("Marker")
-                .snippet("Haha"))
-                .setTag(0);
-
+        addPlace(new LatLng(location.getLatitude(),location.getLongitude()));
     }
 
     /*
@@ -201,12 +212,132 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onInfoWindowClick(Marker marker) {
+    public boolean onMarkerClick(final Marker marker) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
-        ChipGroup chipGroup = view.findViewById(R.id.chipGroup);
+        ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
+        chipGroup.setSingleSelection(true);
+        chipGroup.clearCheck();
+        Chip chipFood = chipGroup.findViewById(R.id.chip_food_drink);
+        Chip chipEntertainment = chipGroup.findViewById(R.id.chip_entertainment);
+        Chip chipEducation = chipGroup.findViewById(R.id.chip_education);
+        Chip chipAdministration = chipGroup.findViewById(R.id.chip_administration);
+        Chip chipGasoline = chipGroup.findViewById(R.id.chip_gasoline);
+        Chip chipReligion = chipGroup.findViewById(R.id.chip_religion);
+        Chip chipVehicleRepair = chipGroup.findViewById(R.id.chip_vehicle_repair);
+        Chip chipOther = chipGroup.findViewById(R.id.chip_other);
+        final TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
+        final PlaceModel place = listManager.getPlaceByMarkerId(marker.getId());
+        if (place!= null) {
+            textNotes.setText(place.getNote());
+            switch (place.getType()){
+                case PlaceModel.TYPE_FOOD_DRINK:
+//                    chipGroup.clearCheck();
+                    chipFood.setSelected(true);
+                    break;
+                case PlaceModel.TYPE_ENTERTAINMENT:
+//                    chipGroup.clearCheck();
+                    chipEntertainment.setSelected(true);
+                    break;
+                case PlaceModel.TYPE_EDUCATION:
+//                    chipGroup.clearCheck();
+                    chipEducation.setSelected(true);
+                    break;
+                case PlaceModel.TYPE_VEHICLE_REPAIR:
+//                    chipGroup.clearCheck();
+                    chipVehicleRepair.setSelected(true);
+                    break;
+                case PlaceModel.TYPE_RELIGION:
+//                    chipGroup.clearCheck();
+                    chipReligion.setSelected(true);
+                    break;
+                case PlaceModel.TYPE_ADMINISTRATION:
+//                    chipGroup.clearCheck();
+                    chipAdministration.setSelected(true);
+                    break;
+                case PlaceModel.TYPE_GASOLINE:
+//                    chipGroup.clearCheck();
+                    chipGasoline.setSelected(true);
+                    break;
+                default:
+//                    chipGroup.clearCheck();
+                    chipOther.setSelected(true);
+                    break;
+            }
+            new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle).setTitle("Place")
+                    .setView(view)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            place.setNote(Objects.requireNonNull(textNotes.getText()).toString());
+                            listManager.updatePlace(place);
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, null)
+                    .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            listManager.delete(marker.getId());
+                            marker.remove();
+                        }
+                    })
+                    .show();
+        }
+        return true;
+    }
+
+    private void addPlace(final LatLng latLng){
+        final View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
+        final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
         new MaterialAlertDialogBuilder(this,R.style.MaterialDialogStyle).setTitle("Place")
                 .setView(view)
-                .setPositiveButton(R.string.ok,null)
+                .setNegativeButton(R.string.cancel,null)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        int type;
+                        switch (chipGroup.getCheckedChipId()){
+                            case R.id.chip_food_drink:
+                                type = PlaceModel.TYPE_FOOD_DRINK;
+                                break;
+                            case R.id.chip_entertainment:
+                                type = PlaceModel.TYPE_ENTERTAINMENT;
+                                break;
+                            case R.id.chip_education:
+                                type = PlaceModel.TYPE_EDUCATION;
+                                break;
+                            case R.id.chip_vehicle_repair:
+                                type = PlaceModel.TYPE_VEHICLE_REPAIR;
+                                break;
+                            case R.id.chip_religion:
+                                type = PlaceModel.TYPE_RELIGION;
+                                break;
+                            case R.id.chip_administration:
+                                type = PlaceModel.TYPE_ADMINISTRATION;
+                                break;
+                            case R.id.chip_gasoline:
+                                type = PlaceModel.TYPE_GASOLINE;
+                                break;
+                            default:
+                                type = PlaceModel.TYPE_OTHER;
+                                break;
+                        }
+                        TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
+                        if (textNotes != null && textNotes.getText() != null) {
+                            String notes = textNotes.getText().toString();
+                            listManager.insertPlace(notes,
+                                    type,
+                                    latLng.latitude,
+                                    latLng.longitude,
+                                    System.currentTimeMillis());
+                            Marker marker = map.addMarker(new MarkerOptions()
+                                    .position(latLng)
+                                    .icon(vectorToBitmap(PlaceModel.getDrawableResource(type)))
+                                    .title(PlaceModel.getTypeInString(type))
+                                    .snippet(notes));
+                            listManager.getPlacesList().get(listManager.size()-1).setMarkerId(marker.getId());
+                        }
+                    }
+                })
                 .show();
     }
 

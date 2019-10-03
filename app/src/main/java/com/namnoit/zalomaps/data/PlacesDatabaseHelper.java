@@ -65,7 +65,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         ArrayList<PlaceModel> places = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_PLACES,
-                new String[]{COLUMN_ID, COLUMN_TYPE, COLUMN_NOTE, COLUMN_TIME},
+                new String[]{COLUMN_ID, COLUMN_TYPE, COLUMN_LATITUDE, COLUMN_LONGITUDE, COLUMN_NOTE, COLUMN_TIME},
                 null,
                 null,
                 null,
@@ -88,14 +88,45 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         return places;
     }
 
-    public void insertPlace(PlaceModel place){
+    public PlaceModel getLatestPlace(){
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_PLACES,
+                new String[]{
+                        COLUMN_ID,
+                        COLUMN_TYPE,
+                        COLUMN_NOTE,
+                        COLUMN_LATITUDE,
+                        COLUMN_LONGITUDE,
+                        COLUMN_TIME
+                },
+                null,
+                null,
+                null,
+                null,
+                null);
+        PlaceModel place = null;
+        if (cursor.moveToLast()) {
+            place = new PlaceModel(
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_ID)),
+                    cursor.getInt(cursor.getColumnIndex(COLUMN_TYPE)),
+                    cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)),
+                    cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGITUDE)),
+                    cursor.getString(cursor.getColumnIndex(COLUMN_NOTE)),
+                    cursor.getLong(cursor.getColumnIndex(COLUMN_TIME)));
+        }
+        cursor.close();
+        db.close();
+        return place;
+    }
+
+    public void insertPlace(String note, int type, double lat, double lng, long time){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NOTE, place.getNote());
-        values.put(COLUMN_TYPE, place.getType());
-        values.put(COLUMN_LATITUDE, place.getLatitude());
-        values.put(COLUMN_LONGITUDE, place.getLongtitude());
-        values.put(COLUMN_TIME, place.getTime());
+        values.put(COLUMN_NOTE, note);
+        values.put(COLUMN_TYPE, type);
+        values.put(COLUMN_LATITUDE, lat);
+        values.put(COLUMN_LONGITUDE, lng);
+        values.put(COLUMN_TIME, time);
         db.insert(TABLE_PLACES,null,values);
         db.close();
     }
