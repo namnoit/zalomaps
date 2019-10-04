@@ -7,48 +7,41 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.CompoundButton;
 
 import com.google.android.material.chip.Chip;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.namnoit.zalomaps.data.PlaceModel;
+import com.namnoit.zalomaps.data.PlacesListManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListActivity extends AppCompatActivity {
-    private ArrayList<PlaceModel> list;
+    private PlacesListManager listManager;
     private PlacesListAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
-
-
-        list = new ArrayList<>();
-        list.add(new PlaceModel(1,
-                PlaceModel.TYPE_ADMINISTRATION,
-                10,
-                10,
-                "Example",
-                1122));
-        list.add(new PlaceModel(2,
-                PlaceModel.TYPE_ENTERTAINMENT,
-                10,
-                10,
-                "Example 2",
-                11212));
-        list.add(new PlaceModel(3,
-                PlaceModel.TYPE_OTHER,
-                10,
-                10,
-                "Example 3",
-                11212));
+        listManager = PlacesListManager.getInstance(getApplicationContext());
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        adapter = new PlacesListAdapter(list);
+//        recyclerView.setPadding(0,0,0,64);
+        adapter = new PlacesListAdapter(listManager.getPlacesList());
         recyclerView.setAdapter(adapter);
+        FloatingActionButton fab_map = findViewById(R.id.fab_map);
+        fab_map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ListActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
         Chip chipFood = findViewById(R.id.chip_list_food_drink);
         Chip chipEntertainment = findViewById(R.id.chip_list_entertainment);
         Chip chipEducation = findViewById(R.id.chip_list_education);
@@ -101,7 +94,7 @@ public class ListActivity extends AppCompatActivity {
                     choice = PlaceModel.TYPE_OTHER;
                     break;
             }
-            for (PlaceModel place: list){
+            for (PlaceModel place: listManager.getPlacesList()){
                 if (place.getType() == choice){
                     place.setChosen(isChecked);
                 }

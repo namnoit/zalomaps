@@ -2,7 +2,9 @@ package com.namnoit.zalomaps;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -18,9 +20,11 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -33,7 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
-import com.google.android.material.chip.Chip;
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -63,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             true, // Religion
             true // Vehicle repair
     };
+    private Toolbar toolbar;
+    private ActionBar actionBar;
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -101,6 +107,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        toolbar = findViewById(R.id.toolbar_map);
+        toolbar.setTitleTextColor(0);
+        setSupportActionBar(toolbar);
+        actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlack));
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
@@ -188,8 +202,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapClick(LatLng latLng) {
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
-        map.animateCamera(cameraUpdate,500,null);
+        if (actionBar.isShowing()){
+            actionBar.hide();
+        }
+        else actionBar.show();
     }
 
     @Override
@@ -214,60 +230,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onMarkerClick(final Marker marker) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
-        ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
-        chipGroup.setSingleSelection(true);
-        chipGroup.clearCheck();
-        Chip chipFood = chipGroup.findViewById(R.id.chip_food_drink);
-        Chip chipEntertainment = chipGroup.findViewById(R.id.chip_entertainment);
-        Chip chipEducation = chipGroup.findViewById(R.id.chip_education);
-        Chip chipAdministration = chipGroup.findViewById(R.id.chip_administration);
-        Chip chipGasoline = chipGroup.findViewById(R.id.chip_gasoline);
-        Chip chipReligion = chipGroup.findViewById(R.id.chip_religion);
-        Chip chipVehicleRepair = chipGroup.findViewById(R.id.chip_vehicle_repair);
-        Chip chipOther = chipGroup.findViewById(R.id.chip_other);
+        final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
         final TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
         final PlaceModel place = listManager.getPlaceByMarkerId(marker.getId());
         if (place!= null) {
+            final int oldType = place.getType();
             textNotes.setText(place.getNote());
             switch (place.getType()){
                 case PlaceModel.TYPE_FOOD_DRINK:
-//                    chipGroup.clearCheck();
-                    chipFood.setSelected(true);
+                    chipGroup.check(R.id.chip_food_drink);
                     break;
                 case PlaceModel.TYPE_ENTERTAINMENT:
-//                    chipGroup.clearCheck();
-                    chipEntertainment.setSelected(true);
+                    chipGroup.check(R.id.chip_entertainment);
                     break;
                 case PlaceModel.TYPE_EDUCATION:
-//                    chipGroup.clearCheck();
-                    chipEducation.setSelected(true);
+                    chipGroup.check(R.id.chip_education);
                     break;
                 case PlaceModel.TYPE_VEHICLE_REPAIR:
-//                    chipGroup.clearCheck();
-                    chipVehicleRepair.setSelected(true);
+                    chipGroup.check(R.id.chip_vehicle_repair);
                     break;
                 case PlaceModel.TYPE_RELIGION:
-//                    chipGroup.clearCheck();
-                    chipReligion.setSelected(true);
+                    chipGroup.check(R.id.chip_religion);
                     break;
                 case PlaceModel.TYPE_ADMINISTRATION:
-//                    chipGroup.clearCheck();
-                    chipAdministration.setSelected(true);
+                    chipGroup.check(R.id.chip_administration);
                     break;
                 case PlaceModel.TYPE_GASOLINE:
-//                    chipGroup.clearCheck();
-                    chipGasoline.setSelected(true);
+                    chipGroup.check(R.id.chip_gasoline);
                     break;
                 default:
-//                    chipGroup.clearCheck();
-                    chipOther.setSelected(true);
+                    chipGroup.check(R.id.chip_other);
                     break;
             }
-            new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle).setTitle("Place")
+            new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle)
+                    .setTitle(PlaceModel.getTypeInString(oldType))
                     .setView(view)
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
+                            int newType = PlaceModel.getTypeByIdDialog(chipGroup.getCheckedChipId());
+                            if (newType != oldType){
+                                marker.setIcon(vectorToBitmap(PlaceModel.getDrawableResource(newType)));
+                                place.setType(newType);
+                            }
                             place.setNote(Objects.requireNonNull(textNotes.getText()).toString());
                             listManager.updatePlace(place);
                         }
@@ -288,39 +293,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void addPlace(final LatLng latLng){
         final View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
         final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
-        new MaterialAlertDialogBuilder(this,R.style.MaterialDialogStyle).setTitle("Place")
+        new MaterialAlertDialogBuilder(this,R.style.MaterialDialogStyle)
+                .setTitle(R.string.add_new_place)
                 .setView(view)
                 .setNegativeButton(R.string.cancel,null)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        int type;
-                        switch (chipGroup.getCheckedChipId()){
-                            case R.id.chip_food_drink:
-                                type = PlaceModel.TYPE_FOOD_DRINK;
-                                break;
-                            case R.id.chip_entertainment:
-                                type = PlaceModel.TYPE_ENTERTAINMENT;
-                                break;
-                            case R.id.chip_education:
-                                type = PlaceModel.TYPE_EDUCATION;
-                                break;
-                            case R.id.chip_vehicle_repair:
-                                type = PlaceModel.TYPE_VEHICLE_REPAIR;
-                                break;
-                            case R.id.chip_religion:
-                                type = PlaceModel.TYPE_RELIGION;
-                                break;
-                            case R.id.chip_administration:
-                                type = PlaceModel.TYPE_ADMINISTRATION;
-                                break;
-                            case R.id.chip_gasoline:
-                                type = PlaceModel.TYPE_GASOLINE;
-                                break;
-                            default:
-                                type = PlaceModel.TYPE_OTHER;
-                                break;
-                        }
+                        int type = PlaceModel.getTypeByIdDialog(chipGroup.getCheckedChipId());
                         TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
                         if (textNotes != null && textNotes.getText() != null) {
                             String notes = textNotes.getText().toString();

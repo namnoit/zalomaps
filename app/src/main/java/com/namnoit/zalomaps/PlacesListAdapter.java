@@ -35,6 +35,8 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
             holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
             return;
         }
+        if (position == list.size()-1){
+        }
         holder.itemView.setVisibility(View.VISIBLE);
         holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

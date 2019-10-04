@@ -6,17 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity">
-
         <fragment
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
             app:cameraTargetLat="10.758168"
             app:cameraTargetLng="-253.253904"
             app:cameraZoom="15"
@@ -26,7 +21,24 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:context="com.namnoit.zalomaps.MainActivity" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/background_toolbar"
+        android:layout_marginEnd="8dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+
+            app:title="Title" />
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -38,4 +50,5 @@
         android:backgroundTint="@color/colorPrimary"
         app:srcCompat="@drawable/ic_list"
         app:tint="@color/colorWhite" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

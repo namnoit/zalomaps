@@ -75,6 +75,27 @@ public class PlaceModel {
         }
     }
 
+    public static int getTypeByIdDialog(int id){
+        switch (id){
+            case R.id.chip_food_drink:
+                return PlaceModel.TYPE_FOOD_DRINK;
+            case R.id.chip_entertainment:
+                return PlaceModel.TYPE_ENTERTAINMENT;
+            case R.id.chip_education:
+                return PlaceModel.TYPE_EDUCATION;
+            case R.id.chip_vehicle_repair:
+                return PlaceModel.TYPE_VEHICLE_REPAIR;
+            case R.id.chip_religion:
+                return PlaceModel.TYPE_RELIGION;
+            case R.id.chip_administration:
+                return PlaceModel.TYPE_ADMINISTRATION;
+            case R.id.chip_gasoline:
+                return PlaceModel.TYPE_GASOLINE;
+            default:
+                return PlaceModel.TYPE_OTHER;
+        }
+    }
+
     public int getId() {
         return id;
     }

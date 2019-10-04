@@ -12,15 +12,18 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ListActivity"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.White" />
-        <activity android:name=".MainActivity">
+            android:theme="@style/AppTheme.White" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".MainActivity"
+            android:parentActivityName=".ListActivity"
+            android:theme="@style/AppTheme">
+
         </activity>
 
         <meta-data
