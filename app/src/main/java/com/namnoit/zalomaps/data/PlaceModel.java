@@ -3,6 +3,7 @@ package com.namnoit.zalomaps.data;
 import android.app.Application;
 import android.content.Context;
 
+import com.google.android.gms.maps.model.Marker;
 import com.namnoit.zalomaps.R;
 
 public class PlaceModel {
@@ -22,6 +23,7 @@ public class PlaceModel {
     private double latitude, longitude;
     private boolean chosen;
     private String markerId;
+    private Marker marker;
 
     public PlaceModel(int id, int type, double latitude, double longitude, String note, long time){
         this.id = id;
@@ -120,12 +122,12 @@ public class PlaceModel {
         this.latitude = latitude;
     }
 
-    public double getLongtitude() {
+    public double getLongitude() {
         return longitude;
     }
 
-    public void setLongtitude(double longtitude) {
-        this.longitude = longtitude;
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public String getNote() {
@@ -158,5 +160,13 @@ public class PlaceModel {
 
     public String getMarkerId(){
         return markerId;
+    }
+
+    public void setMarker(Marker marker) {
+        this.marker = marker;
+    }
+
+    public Marker getMarker() {
+        return marker;
     }
 }

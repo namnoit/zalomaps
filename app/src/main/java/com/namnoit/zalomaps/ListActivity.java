@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -24,6 +25,7 @@ public class ListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toast.makeText(this, "On Create", Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_list);
         listManager = PlacesListManager.getInstance(getApplicationContext());
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
@@ -31,8 +33,7 @@ public class ListActivity extends AppCompatActivity {
                 new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-//        recyclerView.setPadding(0,0,0,64);
-        adapter = new PlacesListAdapter(listManager.getPlacesList());
+        adapter = new PlacesListAdapter(listManager.getPlacesList(), getApplicationContext());
         recyclerView.setAdapter(adapter);
         FloatingActionButton fab_map = findViewById(R.id.fab_map);
         fab_map.setOnClickListener(new View.OnClickListener() {

@@ -1,5 +1,7 @@
 package com.namnoit.zalomaps;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +17,16 @@ import com.namnoit.zalomaps.data.PlaceModel;
 import java.util.ArrayList;
 
 public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.ViewHolder> {
+    public static final String KEY_LATITUDE = "latitude";
+    public static final String KEY_LONGITUDE = "longitude";
+    public static final String ACTION_FOCUS = "focus";
+    public static final String KEY_ID = "id";
     private ArrayList<PlaceModel> list;
+    private Context context;
 
-    public PlacesListAdapter(ArrayList<PlaceModel> list){
+    public PlacesListAdapter(ArrayList<PlaceModel> list, Context context){
         this.list = list;
+        this.context = context;
     }
     @NonNull
     @Override
@@ -29,7 +37,7 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         if (!list.get(position).isChosen()){
             holder.itemView.setVisibility(View.GONE);
             holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
@@ -77,6 +85,15 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                 holder.icon.setImageResource(R.drawable.ic_marker_other);
                 break;
         }
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context,MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra(KEY_ID,list.get(position).getId());
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override

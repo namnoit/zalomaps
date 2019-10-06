@@ -136,7 +136,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TYPE, place.getType());
         values.put(COLUMN_LATITUDE, place.getLatitude());
-        values.put(COLUMN_LONGITUDE, place.getLongtitude());
+        values.put(COLUMN_LONGITUDE, place.getLongitude());
         values.put(COLUMN_NOTE,place.getNote());
         values.put(COLUMN_TIME,place.getTime());
         db.update(TABLE_PLACES,

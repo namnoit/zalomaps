@@ -22,9 +22,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.view.animation.AccelerateInterpolator;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -37,7 +36,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -108,13 +106,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = findViewById(R.id.toolbar_map);
-        toolbar.setTitleTextColor(0);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-        Window window = getWindow();
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.colorBlack));
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
@@ -179,19 +173,36 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map.setOnMapLongClickListener(this);
         map.setOnMyLocationClickListener(this);
         map.setOnMarkerClickListener(this);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            View mapView = mapFragment.getView();
+            assert mapView != null;
+            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
+            rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
+            rlp.setMargins(0, 180, 180, 0);
+        }
         showAllMarker();
     }
 
+
     private void showAllMarker() {
-        for (PlaceModel place: listManager.getPlacesList()){
-            if (place.isChosen()){
-                Marker marker = map.addMarker(new MarkerOptions()
-                        .position(new LatLng(place.getLatitude(),place.getLongtitude()))
-                        .icon(vectorToBitmap(PlaceModel.getDrawableResource(place.getType())))
-                        .title(PlaceModel.getTypeInString(place.getType()))
-                        .snippet(place.getNote()));
-                place.setMarkerId(marker.getId());
+        Intent intent = getIntent();
+        int id = intent.getIntExtra(PlacesListAdapter.KEY_ID,-1);
+        for (PlaceModel place: listManager.getPlacesList()) {
+            Marker marker = map.addMarker(new MarkerOptions()
+                    .position(new LatLng(place.getLatitude(), place.getLongitude()))
+                    .icon(vectorToBitmap(PlaceModel.getDrawableResource(place.getType())))
+                    .title(PlaceModel.getTypeInString(place.getType()))
+                    .snippet(place.getNote()));
+            if (id == place.getId()) {
+                map.moveCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+                marker.showInfoWindow();
             }
+            place.setMarkerId(marker.getId());
+            place.setMarker(marker);
         }
     }
 
@@ -229,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
+        Toast.makeText(this, marker.getId(), Toast.LENGTH_SHORT).show();
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
         final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
         final TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
