@@ -1,5 +1,6 @@
 package com.namnoit.zalomaps;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Toast;
@@ -20,12 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ListActivity extends AppCompatActivity {
+    private static final String ADMINISTRATION_SELECTED = "administration_selected";
+    private static final String EDUCATION_SELECTED = "education_selected";
+    private static final String ENTERTAINMENT_SELECTED = "entertainment_selected";
+    private static final String FOOD_SELECTED = "food_selected";
+    private static final String GASOLINE_SELECTED = "gasoline_selected";
+    private static final String RELIGION_SELECTED = "religion_selected";
+    private static final String VEHICLE_SELECTED = "vehicle_selected";
+    private static final String OTHER_SELECTED = "other_selected";
     private PlacesListManager listManager;
     private PlacesListAdapter adapter;
+    private Chip chipFood, chipEntertainment, chipEducation, chipAdministration, chipGasoline,
+            chipReligion, chipVehicleRepair, chipOther;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Toast.makeText(this, "On Create", Toast.LENGTH_SHORT).show();
         setContentView(R.layout.activity_list);
         listManager = PlacesListManager.getInstance(getApplicationContext());
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
@@ -43,17 +54,18 @@ public class ListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        Chip chipFood = findViewById(R.id.chip_list_food_drink);
-        Chip chipEntertainment = findViewById(R.id.chip_list_entertainment);
-        Chip chipEducation = findViewById(R.id.chip_list_education);
-        Chip chipAdministration = findViewById(R.id.chip_list_administration);
-        Chip chipGasoline = findViewById(R.id.chip_list_gasoline);
-        Chip chipReligion = findViewById(R.id.chip_list_religion);
-        Chip chipVehicleRepair = findViewById(R.id.chip_list_vehicle_repair);
-        Chip chipOther = findViewById(R.id.chip_list_other);
+        chipFood = findViewById(R.id.chip_list_food_drink);
+        chipEntertainment = findViewById(R.id.chip_list_entertainment);
+        chipEducation = findViewById(R.id.chip_list_education);
+        chipAdministration = findViewById(R.id.chip_list_administration);
+        chipGasoline = findViewById(R.id.chip_list_gasoline);
+        chipReligion = findViewById(R.id.chip_list_religion);
+        chipVehicleRepair = findViewById(R.id.chip_list_vehicle_repair);
+        chipOther = findViewById(R.id.chip_list_other);
+
         Intent intent = getIntent();
         boolean[] choices = intent.getBooleanArrayExtra("choices");
-        if (choices!=null){
+        if (choices != null) {
         }
         chipFood.setOnCheckedChangeListener(chipCheckedListener);
         chipEntertainment.setOnCheckedChangeListener(chipCheckedListener);
@@ -103,4 +115,36 @@ public class ListActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         }
     };
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putBoolean(ADMINISTRATION_SELECTED, chipAdministration.isChecked());
+        savedInstanceState.putBoolean(EDUCATION_SELECTED, chipEducation.isChecked());
+        savedInstanceState.putBoolean(ENTERTAINMENT_SELECTED, chipEntertainment.isChecked());
+        savedInstanceState.putBoolean(FOOD_SELECTED, chipFood.isChecked());
+        savedInstanceState.putBoolean(GASOLINE_SELECTED, chipGasoline.isChecked());
+        savedInstanceState.putBoolean(RELIGION_SELECTED, chipReligion.isChecked());
+        savedInstanceState.putBoolean(VEHICLE_SELECTED, chipVehicleRepair.isChecked());
+        savedInstanceState.putBoolean(OTHER_SELECTED, chipOther.isChecked());
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        // Always call the superclass so it can restore the view hierarchy
+        super.onRestoreInstanceState(savedInstanceState);
+        chipAdministration.setChecked(savedInstanceState.getBoolean(ADMINISTRATION_SELECTED));
+        chipEducation.setChecked(savedInstanceState.getBoolean(EDUCATION_SELECTED));
+        chipEntertainment.setChecked(savedInstanceState.getBoolean(ENTERTAINMENT_SELECTED));
+        chipFood.setChecked(savedInstanceState.getBoolean(FOOD_SELECTED));
+        chipGasoline.setChecked(savedInstanceState.getBoolean(GASOLINE_SELECTED));
+        chipReligion.setChecked(savedInstanceState.getBoolean(RELIGION_SELECTED));
+        chipVehicleRepair.setChecked(savedInstanceState.getBoolean(VEHICLE_SELECTED));
+        chipOther.setChecked(savedInstanceState.getBoolean(OTHER_SELECTED));
+    }
 }
