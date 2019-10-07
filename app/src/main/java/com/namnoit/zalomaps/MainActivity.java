@@ -16,6 +16,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.VectorDrawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -36,6 +38,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -43,8 +47,10 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.namnoit.zalomaps.data.PlaceModel;
 import com.namnoit.zalomaps.data.PlacesListManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
@@ -65,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             true, // Religion
             true // Vehicle repair
     };
-    private Toolbar toolbar;
     private ActionBar actionBar;
 
     @Override
@@ -105,10 +110,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toolbar = findViewById(R.id.toolbar_map);
+        Places.initialize(getApplicationContext(), getResources().getString(R.string.google_maps_key));
+        PlacesClient placesClient = Places.createClient(this);
+        Toolbar toolbar = findViewById(R.id.toolbar_map);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
@@ -126,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         listManager = PlacesListManager.getInstance(getApplicationContext());
 
     }
+
 
     private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -197,12 +207,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .icon(vectorToBitmap(PlaceModel.getDrawableResource(place.getType())))
                     .title(PlaceModel.getTypeInString(place.getType()))
                     .snippet(place.getNote()));
+            marker.setTag(place);
             if (id == place.getId()) {
                 map.moveCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
                 marker.showInfoWindow();
             }
-            place.setMarkerId(marker.getId());
-            place.setMarker(marker);
         }
     }
 
@@ -240,12 +249,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        Toast.makeText(this, marker.getId(), Toast.LENGTH_SHORT).show();
+        final PlaceModel place = (PlaceModel) marker.getTag();
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
         final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
         final TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
-        final PlaceModel place = listManager.getPlaceByMarkerId(marker.getId());
+        final TextInputEditText textAddress = view.findViewById(R.id.text_address);
         if (place!= null) {
+            textAddress.setHint(place.getAddress());
             final int oldType = place.getType();
             textNotes.setText(place.getNote());
             switch (place.getType()){
@@ -293,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            listManager.delete(marker.getId());
+                            listManager.delete(place);
                             marker.remove();
                         }
                     })
@@ -305,6 +315,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void addPlace(final LatLng latLng){
         final View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
         final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
+        TextInputEditText textAddress = view.findViewById(R.id.text_address);
+        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+        List<Address> addresses;
+        String address;
+        try {
+            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude,1);
+            address = addresses.get(0).getAddressLine(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+            address = getResources().getString(R.string.address_not_found);
+        }
+        textAddress.setHint(address);
+        final String finalAddress = address;
         new MaterialAlertDialogBuilder(this,R.style.MaterialDialogStyle)
                 .setTitle(R.string.add_new_place)
                 .setView(view)
@@ -320,13 +343,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     type,
                                     latLng.latitude,
                                     latLng.longitude,
-                                    System.currentTimeMillis());
+                                    System.currentTimeMillis(),
+                                    finalAddress);
                             Marker marker = map.addMarker(new MarkerOptions()
                                     .position(latLng)
                                     .icon(vectorToBitmap(PlaceModel.getDrawableResource(type)))
                                     .title(PlaceModel.getTypeInString(type))
                                     .snippet(notes));
-                            listManager.getPlacesList().get(listManager.size()-1).setMarkerId(marker.getId());
+                            marker.showInfoWindow();
+                            marker.setTag(listManager.getPlacesList().get(0));
                         }
                     }
                 })

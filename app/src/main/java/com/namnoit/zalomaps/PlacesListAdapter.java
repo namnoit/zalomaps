@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.namnoit.zalomaps.data.PlaceModel;
@@ -85,6 +86,15 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                 holder.icon.setImageResource(R.drawable.ic_marker_other);
                 break;
         }
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent broadcast = new Intent(ListActivity.BROADCAST_START_SELECTING);
+                LocalBroadcastManager.getInstance(context).sendBroadcast(broadcast);
+                return true;
+            }
+        });
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,6 +104,7 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                 context.startActivity(intent);
             }
         });
+
     }
 
     @Override

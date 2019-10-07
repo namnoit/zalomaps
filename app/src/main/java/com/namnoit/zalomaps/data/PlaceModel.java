@@ -1,9 +1,5 @@
 package com.namnoit.zalomaps.data;
 
-import android.app.Application;
-import android.content.Context;
-
-import com.google.android.gms.maps.model.Marker;
 import com.namnoit.zalomaps.R;
 
 public class PlaceModel {
@@ -21,17 +17,17 @@ public class PlaceModel {
     private String note;
     private long time;
     private double latitude, longitude;
+    private String address;
     private boolean chosen;
-    private String markerId;
-    private Marker marker;
 
-    public PlaceModel(int id, int type, double latitude, double longitude, String note, long time){
+    public PlaceModel(int id, int type, double latitude, double longitude, String note, long time, String address){
         this.id = id;
         this.type = type;
         this.latitude = latitude;
         this.longitude = longitude;
         this.note = note;
         this.time = time;
+        this.address = address;
         chosen = true;
     }
 
@@ -154,19 +150,11 @@ public class PlaceModel {
         return chosen;
     }
 
-    public void setMarkerId(String markerId) {
-        this.markerId = markerId;
+    public String getAddress() {
+        return address;
     }
 
-    public String getMarkerId(){
-        return markerId;
-    }
-
-    public void setMarker(Marker marker) {
-        this.marker = marker;
-    }
-
-    public Marker getMarker() {
-        return marker;
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

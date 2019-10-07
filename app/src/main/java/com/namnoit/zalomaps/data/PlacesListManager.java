@@ -24,15 +24,15 @@ public class PlacesListManager {
         return places;
     }
 
-    public void insertPlace(String note, int type, double lat, double lng, long time){
-        db.insertPlace(note,type,lat,lng,time);
+    public void insertPlace(String note, int type, double lat, double lng, long time, String address){
+        db.insertPlace(note,type,lat,lng,time,address);
         PlaceModel place = db.getLatestPlace();
-        places.add(place);
+        places.add(0,place);
     }
 
-    public void delete(String markerId){
+    public void delete(int id){
         for (int i = 0; i < places.size(); i++){
-            if (places.get(i).getMarkerId() != null && places.get(i).getMarkerId().equals(markerId)){
+            if (places.get(i).getId() == id){
                 db.delete(places.get(i).getId());
                 places.remove(i);
                 break;
@@ -40,13 +40,11 @@ public class PlacesListManager {
         }
     }
 
-    public PlaceModel getPlaceByMarkerId(String markerId){
-        for (PlaceModel place: places){
-            if (place.getMarkerId() != null && place.getMarkerId().equals(markerId)){
-                return place;
-            }
+    public void delete(PlaceModel place){
+        int id = place.getId();
+        if (places.remove(place)){
+            db.delete(id);
         }
-        return null;
     }
 
     public void updatePlace(PlaceModel place){
