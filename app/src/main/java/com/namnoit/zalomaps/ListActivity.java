@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -19,25 +20,18 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 import com.google.android.material.chip.Chip;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.namnoit.zalomaps.data.PlaceModel;
 import com.namnoit.zalomaps.data.PlacesListManager;
 
 
 public class ListActivity extends AppCompatActivity {
+    public static final String BROADCAST_SELECT = "select";
     public static final String BROADCAST_START_SELECTING = "start_selecting";
-    private static final String ADMINISTRATION_SELECTED = "administration_selected";
-    private static final String EDUCATION_SELECTED = "education_selected";
-    private static final String ENTERTAINMENT_SELECTED = "entertainment_selected";
-    private static final String FOOD_SELECTED = "food_selected";
-    private static final String GASOLINE_SELECTED = "gasoline_selected";
-    private static final String RELIGION_SELECTED = "religion_selected";
-    private static final String VEHICLE_SELECTED = "vehicle_selected";
-    private static final String OTHER_SELECTED = "other_selected";
+    public static final String BROADCAST_FINISH_SELECTING = "finish_selecting";
     private PlacesListManager listManager;
     private PlacesListAdapter adapter;
-    private Chip chipFood, chipEntertainment, chipEducation, chipAdministration, chipGasoline,
-            chipReligion, chipVehicleRepair, chipOther;
     private ActionMode mActionMode;
     private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
@@ -54,11 +48,20 @@ public class ListActivity extends AppCompatActivity {
 
         @Override
         public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
-            return false;
+            if (menuItem.getItemId() == R.id.select_all_context_menu){
+                actionMode.setTitle(Integer.toString(listManager.selectAll()));
+                adapter.notifyDataSetChanged();
+            }
+            else {
+                deleteSelectedPlaces();
+            }
+            return true;
         }
 
         @Override
         public void onDestroyActionMode(ActionMode actionMode) {
+            listManager.removeAllSelection();
+            adapter.notifyDataSetChanged();
             mActionMode = null;
         }
     };
@@ -70,6 +73,15 @@ public class ListActivity extends AppCompatActivity {
                 switch (intent.getAction()) {
                     case BROADCAST_START_SELECTING:
                         mActionMode = startActionMode(actionModeCallback);
+                    case BROADCAST_SELECT:
+                        if (mActionMode != null) {
+                            mActionMode.setTitle(Integer.toString(intent.
+                                    getIntExtra(PlacesListAdapter.KEY_SELECTED_COUNT,0)));
+                        }
+                        break;
+                    case BROADCAST_FINISH_SELECTING:
+                        mActionMode.finish();
+                        mActionMode = null;
                         break;
                 }
             }
@@ -86,7 +98,7 @@ public class ListActivity extends AppCompatActivity {
                 new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        adapter = new PlacesListAdapter(listManager.getPlacesList(), getApplicationContext());
+        adapter = new PlacesListAdapter(this);
         recyclerView.setAdapter(adapter);
         FloatingActionButton fab_map = findViewById(R.id.fab_map);
         fab_map.setOnClickListener(new View.OnClickListener() {
@@ -96,19 +108,14 @@ public class ListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        chipFood = findViewById(R.id.chip_list_food_drink);
-        chipEntertainment = findViewById(R.id.chip_list_entertainment);
-        chipEducation = findViewById(R.id.chip_list_education);
-        chipAdministration = findViewById(R.id.chip_list_administration);
-        chipGasoline = findViewById(R.id.chip_list_gasoline);
-        chipReligion = findViewById(R.id.chip_list_religion);
-        chipVehicleRepair = findViewById(R.id.chip_list_vehicle_repair);
-        chipOther = findViewById(R.id.chip_list_other);
-
-        Intent intent = getIntent();
-        boolean[] choices = intent.getBooleanArrayExtra("choices");
-        if (choices != null) {
-        }
+        Chip chipFood = findViewById(R.id.chip_list_food_drink);
+        Chip chipEntertainment = findViewById(R.id.chip_list_entertainment);
+        Chip chipEducation = findViewById(R.id.chip_list_education);
+        Chip chipAdministration = findViewById(R.id.chip_list_administration);
+        Chip chipGasoline = findViewById(R.id.chip_list_gasoline);
+        Chip chipReligion = findViewById(R.id.chip_list_religion);
+        Chip chipVehicleRepair = findViewById(R.id.chip_list_vehicle_repair);
+        Chip chipOther = findViewById(R.id.chip_list_other);
         chipFood.setOnCheckedChangeListener(chipCheckedListener);
         chipEntertainment.setOnCheckedChangeListener(chipCheckedListener);
         chipAdministration.setOnCheckedChangeListener(chipCheckedListener);
@@ -123,7 +130,17 @@ public class ListActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
+                new IntentFilter(BROADCAST_SELECT));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
                 new IntentFilter(BROADCAST_START_SELECTING));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
+                new IntentFilter(BROADCAST_FINISH_SELECTING));
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onPause();
     }
 
     private Chip.OnCheckedChangeListener chipCheckedListener = new CompoundButton.OnCheckedChangeListener() {
@@ -171,5 +188,23 @@ public class ListActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
+    private void deleteSelectedPlaces(){
+        new MaterialAlertDialogBuilder(ListActivity.this,R.style.MaterialDialogStyle)
+                .setTitle(R.string.title_delete)
+                .setMessage(R.string.delete_selected_places)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        listManager.deleteSelectedPlaces();
+                        adapter.notifyDataSetChanged();
+                        mActionMode.finish();
+                        mActionMode = null;
+                    }
+                })
+                .setNegativeButton(R.string.cancel,null)
+                .show();
 
+
+
+    }
 }

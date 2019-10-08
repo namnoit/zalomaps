@@ -24,4 +24,7 @@
     <string name="delete">Delete</string>
     <string name="add_new_place">Add new place</string>
     <string name="address_not_found">Address was not found</string>
+    <string name="delete_selected_places">All selected places will be deleted</string>
+    <string name="title_delete">Delete?</string>
+    <string name="address">Address</string>
 </resources>

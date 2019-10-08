@@ -1,7 +1,9 @@
 package com.namnoit.zalomaps;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,24 +12,34 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 import com.namnoit.zalomaps.data.PlaceModel;
+import com.namnoit.zalomaps.data.PlacesListManager;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.ViewHolder> {
     public static final String KEY_LATITUDE = "latitude";
     public static final String KEY_LONGITUDE = "longitude";
     public static final String ACTION_FOCUS = "focus";
     public static final String KEY_ID = "id";
+    public static final String KEY_SELECTED_COUNT = "selected_count";
+    private static final String ITEM_POSITION = "item_position";
     private ArrayList<PlaceModel> list;
+    private PlacesListManager listManager;
     private Context context;
 
-    public PlacesListAdapter(ArrayList<PlaceModel> list, Context context){
-        this.list = list;
+    public PlacesListAdapter(Context context){
         this.context = context;
+        listManager = PlacesListManager.getInstance(context);
+        list = listManager.getPlacesList();
     }
     @NonNull
     @Override
@@ -44,67 +56,158 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
             holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
             return;
         }
-        if (position == list.size()-1){
-        }
         holder.itemView.setVisibility(View.VISIBLE);
         holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         holder.notes.setText(list.get(position).getNote());
-        holder.icon.setImageResource(R.drawable.ic_marker_education);
-        switch (list.get(position).getType()){
+        final PlaceModel place = list.get(position);
+        int icon;
+        switch (place.getType()){
             case PlaceModel.TYPE_FOOD_DRINK:
                 holder.category.setText(R.string.food_drink);
-                holder.icon.setImageResource(R.drawable.ic_marker_food);
+                icon = R.drawable.ic_marker_food;
                 break;
             case PlaceModel.TYPE_ENTERTAINMENT:
                 holder.category.setText(R.string.entertainment);
-                holder.icon.setImageResource(R.drawable.ic_marker_entertainment);
+                icon = R.drawable.ic_marker_entertainment;
                 break;
             case PlaceModel.TYPE_EDUCATION:
                 holder.category.setText(R.string.education);
-                holder.icon.setImageResource(R.drawable.ic_marker_education);
+                icon = R.drawable.ic_marker_education;
                 break;
             case PlaceModel.TYPE_VEHICLE_REPAIR:
                 holder.category.setText(R.string.vehicle_repair);
-                holder.icon.setImageResource(R.drawable.ic_marker_car_repair);
+                icon = R.drawable.ic_marker_car_repair;
                 break;
             case PlaceModel.TYPE_RELIGION:
                 holder.category.setText(R.string.religion);
-                holder.icon.setImageResource(R.drawable.ic_marker_religion);
+                icon = R.drawable.ic_marker_religion;
                 break;
             case PlaceModel.TYPE_ADMINISTRATION:
                 holder.category.setText(R.string.administration);
-                holder.icon.setImageResource(R.drawable.ic_marker_administration);
+                icon = R.drawable.ic_marker_administration;
                 break;
             case PlaceModel.TYPE_GASOLINE:
                 holder.category.setText(R.string.gasoline);
-                holder.icon.setImageResource(R.drawable.ic_marker_gasoline);
+                icon = R.drawable.ic_marker_gasoline;
                 break;
-            case PlaceModel.TYPE_OTHER:
+            default:
                 holder.category.setText(R.string.other);
-                holder.icon.setImageResource(R.drawable.ic_marker_other);
+                icon = R.drawable.ic_marker_other;
                 break;
         }
-
+        if (listManager.getSelectedCount() > 0){
+            holder.icon.setImageResource(listManager.isSelected(place) ?
+                    R.drawable.ic_check : R.drawable.ic_uncheck);
+        }
+        else {
+            holder.icon.setImageResource(icon);
+        }
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Intent broadcast = new Intent(ListActivity.BROADCAST_START_SELECTING);
-                LocalBroadcastManager.getInstance(context).sendBroadcast(broadcast);
+                select(place, position);
                 return true;
             }
         });
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context,MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.putExtra(KEY_ID,list.get(position).getId());
-                context.startActivity(intent);
+                if (listManager.getSelectedCount() > 0) {
+                    select(place, position);
+                }
+                else {
+                    Intent intent = new Intent(context, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra(KEY_ID, list.get(position).getId());
+                    context.startActivity(intent);
+                }
             }
         });
+        holder.buttonMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                View infoDialog = LayoutInflater.from(context).inflate(R.layout.dialog_add_place,null);
+                final ChipGroup chipGroup = infoDialog.findViewById(R.id.chip_group_add_place);
+                final TextInputEditText textNotes = infoDialog.findViewById(R.id.text_notes_add_place);
+                final TextInputEditText textAddress = infoDialog.findViewById(R.id.text_address);
+                    textAddress.setText(place.getAddress());
+                    final int oldType = place.getType();
+                    textNotes.setText(place.getNote());
+                    switch (place.getType()) {
+                        case PlaceModel.TYPE_FOOD_DRINK:
+                            chipGroup.check(R.id.chip_food_drink);
+                            break;
+                        case PlaceModel.TYPE_ENTERTAINMENT:
+                            chipGroup.check(R.id.chip_entertainment);
+                            break;
+                        case PlaceModel.TYPE_EDUCATION:
+                            chipGroup.check(R.id.chip_education);
+                            break;
+                        case PlaceModel.TYPE_VEHICLE_REPAIR:
+                            chipGroup.check(R.id.chip_vehicle_repair);
+                            break;
+                        case PlaceModel.TYPE_RELIGION:
+                            chipGroup.check(R.id.chip_religion);
+                            break;
+                        case PlaceModel.TYPE_ADMINISTRATION:
+                            chipGroup.check(R.id.chip_administration);
+                            break;
+                        case PlaceModel.TYPE_GASOLINE:
+                            chipGroup.check(R.id.chip_gasoline);
+                            break;
+                        default:
+                            chipGroup.check(R.id.chip_other);
+                            break;
+                    }
+                new MaterialAlertDialogBuilder(context, R.style.MaterialDialogStyle)
+                        .setTitle(PlaceModel.getTypeInString(oldType))
+                        .setView(infoDialog)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                int newType = PlaceModel.getTypeByIdDialog(chipGroup.getCheckedChipId());
+                                if (newType != oldType){
+                                    place.setType(newType);
+                                }
+                                place.setNote(Objects.requireNonNull(textNotes.getText()).toString());
+                                listManager.updatePlace(place);
+                                notifyItemChanged(position);
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, null)
+                        .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                listManager.delete(place);
+                                notifyItemRemoved(position);
+                            }
+                        })
+                        .show();
+            }
+        });
+    }
 
+    private void select(PlaceModel place, int position){
+        Intent broadcast = new Intent(ListActivity.BROADCAST_SELECT);
+        if (listManager.isSelected(place)){
+            listManager.removeSelection(place);
+            if (listManager.getSelectedCount() == 0) {
+                broadcast.setAction(ListActivity.BROADCAST_FINISH_SELECTING);
+                notifyDataSetChanged();
+            }
+        }
+        else {
+            listManager.select(place);
+            if (listManager.getSelectedCount() == 1) {
+                broadcast.setAction(ListActivity.BROADCAST_START_SELECTING);
+                notifyDataSetChanged();
+            }
+        }
+        notifyItemChanged(position);
+        broadcast.putExtra(KEY_SELECTED_COUNT, listManager.getSelectedCount());
+        LocalBroadcastManager.getInstance(context).sendBroadcast(broadcast);
     }
 
     @Override

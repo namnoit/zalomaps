@@ -6,11 +6,14 @@ import java.util.ArrayList;
 
 public class PlacesListManager {
     private ArrayList<PlaceModel> places;
+    private ArrayList<PlaceModel> selectedPlaces;
     private static PlacesListManager instance;
     private PlacesDatabaseHelper db;
+
     private PlacesListManager(Context context){
         db = PlacesDatabaseHelper.getInstance(context);
         places = db.getAllPlaces();
+        selectedPlaces = new ArrayList<>();
     }
 
     public static synchronized PlacesListManager getInstance(Context context){
@@ -53,5 +56,38 @@ public class PlacesListManager {
 
     public int size(){
         return places.size();
+    }
+
+    public int getSelectedCount(){
+        return selectedPlaces.size();
+    }
+
+    public void select(PlaceModel place){
+        selectedPlaces.add(place);
+    }
+
+    public void removeSelection(PlaceModel place){
+        selectedPlaces.remove(place);
+    }
+
+    public void removeAllSelection(){
+        selectedPlaces.clear();
+    }
+
+    public void deleteSelectedPlaces(){
+        for (PlaceModel place : selectedPlaces) {
+            db.delete(place.getId());
+            places.remove(place);
+        }
+        selectedPlaces.clear();
+    }
+
+    public int selectAll(){
+        selectedPlaces = new ArrayList<>(places);
+        return selectedPlaces.size();
+    }
+
+    public boolean isSelected(PlaceModel place){
+        return selectedPlaces.contains(place);
     }
 }

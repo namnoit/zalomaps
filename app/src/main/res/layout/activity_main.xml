@@ -24,13 +24,14 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar_map"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="32dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/background_toolbar"
             android:elevation="5dp"
-            app:title="Title" />
+            app:titleTextColor="@color/common_google_signin_btn_text_light"
+            app:title="@string/app_name" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

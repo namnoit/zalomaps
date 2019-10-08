@@ -111,7 +111,7 @@
             android:layout_marginEnd="16dp"
             android:textColorHint="@android:color/primary_text_light"
             android:enabled="false"
-            android:hint="" />
+            android:hint="@string/address" />
     </com.google.android.material.textfield.TextInputLayout>
 
 
