@@ -3,6 +3,7 @@ package com.namnoit.zalomaps;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,24 +21,31 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.namnoit.zalomaps.data.PlaceModel;
 import com.namnoit.zalomaps.data.PlacesListManager;
 
 
-public class ListActivity extends AppCompatActivity {
+public class ListActivity extends AppCompatActivity implements SwipeController.OnSwipedListener {
     public static final String BROADCAST_SELECT = "select";
     public static final String BROADCAST_START_SELECTING = "start_selecting";
     public static final String BROADCAST_FINISH_SELECTING = "finish_selecting";
     private PlacesListManager listManager;
     private PlacesListAdapter adapter;
     private ActionMode mActionMode;
+    private FloatingActionButton fab_map;
+    private ChipGroup chipGroup;
     private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
             MenuInflater inflater = actionMode.getMenuInflater();
             inflater.inflate(R.menu.menu_context, menu);
+            fab_map.hide();
+            chipGroup.setVisibility(View.GONE);
+            chipGroup.setEnabled(false);
+
             return true;
         }
 
@@ -63,6 +71,9 @@ public class ListActivity extends AppCompatActivity {
             listManager.removeAllSelection();
             adapter.notifyDataSetChanged();
             mActionMode = null;
+            fab_map.show();
+            chipGroup.setVisibility(View.VISIBLE);
+            chipGroup.setEnabled(true);
         }
     };
 
@@ -100,14 +111,20 @@ public class ListActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         adapter = new PlacesListAdapter(this);
         recyclerView.setAdapter(adapter);
-        FloatingActionButton fab_map = findViewById(R.id.fab_map);
+
+        SwipeController swipeController = new SwipeController(this, this);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeController);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+        fab_map = findViewById(R.id.fab_map);
         fab_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(ListActivity.this, MainActivity.class);
+                Intent intent = new Intent(ListActivity.this, MapActivity.class);
                 startActivity(intent);
             }
         });
+        chipGroup = findViewById(R.id.chips_filter);
         Chip chipFood = findViewById(R.id.chip_list_food_drink);
         Chip chipEntertainment = findViewById(R.id.chip_list_entertainment);
         Chip chipEducation = findViewById(R.id.chip_list_education);
@@ -206,5 +223,11 @@ public class ListActivity extends AppCompatActivity {
 
 
 
+    }
+
+    @Override
+    public void onSwipe(RecyclerView.ViewHolder viewHolder) {
+        listManager.delete(listManager.getPlacesList().get(viewHolder.getAdapterPosition()));
+        adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
     }
 }

@@ -25,8 +25,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -39,7 +39,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.api.net.PlacesClient;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -49,18 +54,21 @@ import com.namnoit.zalomaps.data.PlacesListManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMyLocationClickListener,
         GoogleMap.OnMarkerClickListener {
+    private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private GoogleMap map;
     private PlacesListManager listManager;
+    private FloatingActionButton fab;
     private boolean[] choices = {
             true, // Administration
             true, // Education
@@ -77,13 +85,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        boolean permissionsAcepted = true;
+        boolean permissionsAccepted = true;
         for (int grantResult : grantResults) {
             if (grantResult < 0) {
-                permissionsAcepted = false;
+                permissionsAccepted = false;
             }
         }
-        if (permissionsAcepted) {
+        if (permissionsAccepted) {
             map.setMyLocationEnabled(true);
         } else {
             new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle)
@@ -107,14 +115,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                Place place = Autocomplete.getPlaceFromIntent(data);
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                // TODO: Handle the error.
+                Status status = Autocomplete.getStatusFromIntent(data);
+            } else if (resultCode == RESULT_CANCELED) {
+                // The user canceled the operation.
+            }
+        }
+    }
+
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_map);
         Places.initialize(getApplicationContext(), getResources().getString(R.string.google_maps_key));
         PlacesClient placesClient = Places.createClient(this);
         Toolbar toolbar = findViewById(R.id.toolbar_map);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
+        final List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Autocomplete.IntentBuilder(
+                        AutocompleteActivityMode.OVERLAY, fields)
+                        .setTypeFilter(TypeFilter.ADDRESS)
+                        .build(MapActivity.this);
+                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+
+            }
+        });
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
@@ -123,13 +160,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this,ListActivity.class);
-                intent.putExtra("choices",choices);
-                startActivityForResult(intent,1);
+
             }
         });
         listManager = PlacesListManager.getInstance(getApplicationContext());
@@ -175,14 +210,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (resourceId > 0) {
             map.setPadding(0,getResources().getDimensionPixelSize(resourceId),0,0);
         }
-        map.getUiSettings().setTiltGesturesEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
         map.getUiSettings().setMyLocationButtonEnabled(true);
-        map.getUiSettings().setZoomControlsEnabled(false);
         map.setOnMapClickListener(this);
         map.setOnMapLongClickListener(this);
         map.setOnMyLocationClickListener(this);
         map.setOnMarkerClickListener(this);
+        map.setOnPoiClickListener(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment != null) {
@@ -224,8 +258,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapClick(LatLng latLng) {
         if (actionBar.isShowing()){
             actionBar.hide();
+            fab.hide();
         }
-        else actionBar.show();
+        else {
+            actionBar.show();
+            fab.show();
+        }
     }
 
     @Override
@@ -255,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
         final TextInputEditText textAddress = view.findViewById(R.id.text_address);
         if (place!= null) {
-            textAddress.setHint(place.getAddress());
+            textAddress.setText(place.getAddress());
             final int oldType = place.getType();
             textNotes.setText(place.getNote());
             switch (place.getType()){
@@ -316,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
         final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
         TextInputEditText textAddress = view.findViewById(R.id.text_address);
-        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+        Geocoder geocoder = new Geocoder(MapActivity.this, Locale.getDefault());
         List<Address> addresses;
         String address;
         try {
@@ -326,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             e.printStackTrace();
             address = getResources().getString(R.string.address_not_found);
         }
-        textAddress.setHint(address);
+        textAddress.setText(address);
         final String finalAddress = address;
         new MaterialAlertDialogBuilder(this,R.style.MaterialDialogStyle)
                 .setTitle(R.string.add_new_place)

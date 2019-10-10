@@ -3,7 +3,6 @@ package com.namnoit.zalomaps;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -98,10 +96,12 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                 break;
         }
         if (listManager.getSelectedCount() > 0){
+//            holder.buttonMore.setEnabled(false);
             holder.icon.setImageResource(listManager.isSelected(place) ?
                     R.drawable.ic_check : R.drawable.ic_uncheck);
         }
         else {
+//            holder.buttonMore.setEnabled(true);
             holder.icon.setImageResource(icon);
         }
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -118,7 +118,7 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                     select(place, position);
                 }
                 else {
-                    Intent intent = new Intent(context, MainActivity.class);
+                    Intent intent = new Intent(context, MapActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra(KEY_ID, list.get(position).getId());
                     context.startActivity(intent);
@@ -128,10 +128,14 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
         holder.buttonMore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                View infoDialog = LayoutInflater.from(context).inflate(R.layout.dialog_add_place,null);
-                final ChipGroup chipGroup = infoDialog.findViewById(R.id.chip_group_add_place);
-                final TextInputEditText textNotes = infoDialog.findViewById(R.id.text_notes_add_place);
-                final TextInputEditText textAddress = infoDialog.findViewById(R.id.text_address);
+                if (listManager.getSelectedCount() > 0) {
+                    select(place, position);
+                }
+                else {
+                    View infoDialog = LayoutInflater.from(context).inflate(R.layout.dialog_add_place, null);
+                    final ChipGroup chipGroup = infoDialog.findViewById(R.id.chip_group_add_place);
+                    final TextInputEditText textNotes = infoDialog.findViewById(R.id.text_notes_add_place);
+                    final TextInputEditText textAddress = infoDialog.findViewById(R.id.text_address);
                     textAddress.setText(place.getAddress());
                     final int oldType = place.getType();
                     textNotes.setText(place.getNote());
@@ -161,30 +165,31 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                             chipGroup.check(R.id.chip_other);
                             break;
                     }
-                new MaterialAlertDialogBuilder(context, R.style.MaterialDialogStyle)
-                        .setTitle(PlaceModel.getTypeInString(oldType))
-                        .setView(infoDialog)
-                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                int newType = PlaceModel.getTypeByIdDialog(chipGroup.getCheckedChipId());
-                                if (newType != oldType){
-                                    place.setType(newType);
+                    new MaterialAlertDialogBuilder(context, R.style.MaterialDialogStyle)
+                            .setTitle(PlaceModel.getTypeInString(oldType))
+                            .setView(infoDialog)
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    int newType = PlaceModel.getTypeByIdDialog(chipGroup.getCheckedChipId());
+                                    if (newType != oldType) {
+                                        place.setType(newType);
+                                    }
+                                    place.setNote(Objects.requireNonNull(textNotes.getText()).toString());
+                                    listManager.updatePlace(place);
+                                    notifyItemChanged(position);
                                 }
-                                place.setNote(Objects.requireNonNull(textNotes.getText()).toString());
-                                listManager.updatePlace(place);
-                                notifyItemChanged(position);
-                            }
-                        })
-                        .setNegativeButton(R.string.cancel, null)
-                        .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                listManager.delete(place);
-                                notifyItemRemoved(position);
-                            }
-                        })
-                        .show();
+                            })
+                            .setNegativeButton(R.string.cancel, null)
+                            .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    listManager.delete(place);
+                                    notifyItemRemoved(position);
+                                }
+                            })
+                            .show();
+                }
             }
         });
     }
