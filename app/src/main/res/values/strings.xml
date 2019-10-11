@@ -27,4 +27,6 @@
     <string name="delete_selected_places">All selected places will be deleted</string>
     <string name="title_delete">Delete?</string>
     <string name="address">Address</string>
+    <string name="search_here">Search here</string>
+    <string name="show_by_type">Show by type</string>
 </resources>

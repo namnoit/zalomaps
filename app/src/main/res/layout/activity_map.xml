@@ -25,7 +25,7 @@
         map:uiZoomControls="false"
         tools:context="com.namnoit.zalomaps.MapActivity" />
 
-        <androidx.appcompat.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar_map"
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -35,16 +35,20 @@
             android:background="@drawable/background_toolbar"
             android:elevation="5dp"
             app:titleTextColor="@color/common_google_signin_btn_text_light"
-            app:title="@string/app_name" />
+            app:title="@string/search_here" />
+
+    <include layout="@layout/bottom_sheet"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         style="@style/Widget.MaterialComponents.FloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:backgroundTint="@color/colorPrimary"
+        app:layout_anchor="@id/bottom_sheet"
+        app:layout_anchorGravity="top|end"
+        app:layout_dodgeInsetEdges="bottom"
         app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@color/colorWhite" />
 

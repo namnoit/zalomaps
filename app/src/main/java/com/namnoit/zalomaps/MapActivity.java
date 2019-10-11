@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -23,8 +24,12 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdate;
@@ -35,6 +40,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
@@ -45,9 +51,12 @@ import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.namnoit.zalomaps.data.PlaceModel;
 import com.namnoit.zalomaps.data.PlacesListManager;
@@ -64,22 +73,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         GoogleMap.OnMapClickListener,
         GoogleMap.OnMapLongClickListener,
         GoogleMap.OnMyLocationClickListener,
-        GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnMarkerClickListener,
+        View.OnClickListener {
     private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private GoogleMap map;
     private PlacesListManager listManager;
     private FloatingActionButton fab;
-    private boolean[] choices = {
-            true, // Administration
-            true, // Education
-            true, // Entertainment
-            true, // Food and drink
-            true, // Gasoline
-            true, // Other
-            true, // Religion
-            true // Vehicle repair
-    };
     private ActionBar actionBar;
+    private View parentView;
+    private ArrayList<Marker> markers;
+    private BottomSheetBehavior sheetBehavior;
+    private boolean isMain = true;
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -120,15 +124,35 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
+                addPlace(Objects.requireNonNull(place.getLatLng()));
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
                 // TODO: Handle the error.
                 Status status = Autocomplete.getStatusFromIntent(data);
+                if (status.getStatusMessage() != null) {
+                    Snackbar.make(parentView, status.getStatusMessage(), BaseTransientBottomBar.LENGTH_SHORT);
+                }
             } else if (resultCode == RESULT_CANCELED) {
                 // The user canceled the operation.
             }
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.home){
+            if (isMain) {
+                finish();
+            }
+            else {
+                for (Marker marker : markers){
+                    marker.setVisible(true);
+                }
+                isMain = true;
+                actionBar.setTitle(R.string.search_here);
+            }
+        }
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,7 +163,30 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Toolbar toolbar = findViewById(R.id.toolbar_map);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
-        final List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+        parentView = findViewById(R.id.layout_main_coor);
+        ConstraintLayout layoutBottomSheet = findViewById(R.id.bottom_sheet);
+        ImageButton administrationButton = layoutBottomSheet.findViewById(R.id.button_administration_sheet);
+        ImageButton educationButton = layoutBottomSheet.findViewById(R.id.button_education_sheet);
+        ImageButton entertainment = layoutBottomSheet.findViewById(R.id.button_entertainment_sheet);
+        ImageButton foodButton = layoutBottomSheet.findViewById(R.id.button_food_sheet);
+        ImageButton gasolineButton = layoutBottomSheet.findViewById(R.id.button_gasoline_sheet);
+        ImageButton religionButton = layoutBottomSheet.findViewById(R.id.button_religion_sheet);
+        ImageButton vehicleButton = layoutBottomSheet.findViewById(R.id.button_vehicle_sheet);
+        ImageButton otherButton = layoutBottomSheet.findViewById(R.id.button_other_sheet);
+        administrationButton.setOnClickListener(this);
+        educationButton.setOnClickListener(this);
+        entertainment.setOnClickListener(this);
+        foodButton.setOnClickListener(this);
+        gasolineButton.setOnClickListener(this);
+        religionButton.setOnClickListener(this);
+        vehicleButton.setOnClickListener(this);
+        otherButton.setOnClickListener(this);
+
+
+        sheetBehavior = BottomSheetBehavior.from(layoutBottomSheet);
+
+        final List<Place.Field> fields =
+                Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG, Place.Field.ADDRESS);
 
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -147,6 +194,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Intent intent = new Autocomplete.IntentBuilder(
                         AutocompleteActivityMode.OVERLAY, fields)
                         .setTypeFilter(TypeFilter.ADDRESS)
+                        .setCountry("VN")
                         .build(MapActivity.this);
                 startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
 
@@ -171,6 +219,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     }
 
+    public void toggleBottomSheet() {
+        if (sheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+            sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+    }
 
     private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -184,8 +239,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 ActivityCompat.requestPermissions(this,
                         listPermissionNeeded.toArray(new String[0]),
                         PERMISSION_REQUEST_CODE);
-            }
-            else {
+            } else {
                 // Zoom to my location
                 map.setMyLocationEnabled(true);
                 LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -208,7 +262,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         int resourceId = getResources()
                 .getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) {
-            map.setPadding(0,getResources().getDimensionPixelSize(resourceId),0,0);
+            map.setPadding(0, getResources().getDimensionPixelSize(resourceId), 0, 0);
         }
         map.getUiSettings().setMapToolbarEnabled(false);
         map.getUiSettings().setMyLocationButtonEnabled(true);
@@ -234,14 +288,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void showAllMarker() {
         Intent intent = getIntent();
-        int id = intent.getIntExtra(PlacesListAdapter.KEY_ID,-1);
-        for (PlaceModel place: listManager.getPlacesList()) {
+        int id = intent.getIntExtra(PlacesListAdapter.KEY_ID, -1);
+        markers = new ArrayList<>();
+
+        for (PlaceModel place : listManager.getPlacesList()) {
             Marker marker = map.addMarker(new MarkerOptions()
                     .position(new LatLng(place.getLatitude(), place.getLongitude()))
                     .icon(vectorToBitmap(PlaceModel.getDrawableResource(place.getType())))
                     .title(PlaceModel.getTypeInString(place.getType()))
                     .snippet(place.getNote()));
             marker.setTag(place);
+            markers.add(marker);
             if (id == place.getId()) {
                 map.moveCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
                 marker.showInfoWindow();
@@ -256,14 +313,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void onMapClick(LatLng latLng) {
-        if (actionBar.isShowing()){
+        if (actionBar.isShowing()) {
             actionBar.hide();
             fab.hide();
-        }
-        else {
+        } else {
             actionBar.show();
             fab.show();
         }
+        sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override
@@ -274,29 +331,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void onMyLocationClick(@NonNull Location location) {
-        addPlace(new LatLng(location.getLatitude(),location.getLongitude()));
+        addPlace(new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
     /*
      * Return hue value (0 - 360) base on number of items and index of this item
      * to set color for markers with different types
      */
-    private int getHueValue(int numberOfItem, int index){
-        return index == 0 ? 0 : index*360/numberOfItem;
+    private int getHueValue(int numberOfItem, int index) {
+        return index == 0 ? 0 : index * 360 / numberOfItem;
     }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
         final PlaceModel place = (PlaceModel) marker.getTag();
-        View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place, null);
         final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
         final TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
         final TextInputEditText textAddress = view.findViewById(R.id.text_address);
-        if (place!= null) {
+        if (place != null) {
             textAddress.setText(place.getAddress());
             final int oldType = place.getType();
             textNotes.setText(place.getNote());
-            switch (place.getType()){
+            switch (place.getType()) {
                 case PlaceModel.TYPE_FOOD_DRINK:
                     chipGroup.check(R.id.chip_food_drink);
                     break;
@@ -329,7 +386,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             int newType = PlaceModel.getTypeByIdDialog(chipGroup.getCheckedChipId());
-                            if (newType != oldType){
+                            if (newType != oldType) {
                                 marker.setIcon(vectorToBitmap(PlaceModel.getDrawableResource(newType)));
                                 place.setType(newType);
                             }
@@ -350,15 +407,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return true;
     }
 
-    private void addPlace(final LatLng latLng){
-        final View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place,null);
+    private void addPlace(final LatLng latLng) {
+        final View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_place, null);
         final ChipGroup chipGroup = view.findViewById(R.id.chip_group_add_place);
         TextInputEditText textAddress = view.findViewById(R.id.text_address);
         Geocoder geocoder = new Geocoder(MapActivity.this, Locale.getDefault());
         List<Address> addresses;
         String address;
         try {
-            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude,1);
+            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
             address = addresses.get(0).getAddressLine(0);
         } catch (IOException e) {
             e.printStackTrace();
@@ -366,10 +423,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         textAddress.setText(address);
         final String finalAddress = address;
-        new MaterialAlertDialogBuilder(this,R.style.MaterialDialogStyle)
+        new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle)
                 .setTitle(R.string.add_new_place)
                 .setView(view)
-                .setNegativeButton(R.string.cancel,null)
+                .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -405,5 +462,71 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         Canvas canvas = new Canvas(bm);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bm);
+    }
+
+    @Override
+    public void onClick(View v) {
+        int type;
+        switch (v.getId()) {
+            case R.id.button_administration_sheet:
+                type = PlaceModel.TYPE_ADMINISTRATION;
+                actionBar.setTitle(getResources().getString(R.string.administration));
+                break;
+            case R.id.button_education_sheet:
+                type = PlaceModel.TYPE_EDUCATION;
+                actionBar.setTitle(getResources().getString(R.string.education));
+                break;
+            case R.id.button_entertainment_sheet:
+                type = PlaceModel.TYPE_ENTERTAINMENT;
+                actionBar.setTitle(getResources().getString(R.string.entertainment));
+                break;
+            case R.id.button_food_sheet:
+                type = PlaceModel.TYPE_FOOD_DRINK;
+                actionBar.setTitle(getResources().getString(R.string.food_drink));
+                break;
+            case R.id.button_gasoline_sheet:
+                type = PlaceModel.TYPE_GASOLINE;
+                actionBar.setTitle(getResources().getString(R.string.gasoline));
+                break;
+            case R.id.button_religion_sheet:
+                type = PlaceModel.TYPE_RELIGION;
+                actionBar.setTitle(getResources().getString(R.string.religion));
+                break;
+            case R.id.button_vehicle_sheet:
+                type = PlaceModel.TYPE_VEHICLE_REPAIR;
+                actionBar.setTitle(getResources().getString(R.string.vehicle_repair));
+                break;
+            default:
+                type = PlaceModel.TYPE_OTHER;
+                actionBar.setTitle(getResources().getString(R.string.other));
+                break;
+        }
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        for (Marker marker : markers) {
+            PlaceModel place = (PlaceModel) marker.getTag();
+            if ((place != null ? place.getType() : -1) != type) {
+                marker.setVisible(false);
+            } else {
+                marker.setVisible(true);
+                builder.include(marker.getPosition());
+            }
+        }
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            checkPermissions();
+            return;
+        }
+        Location location = locationManager != null ? locationManager
+                .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
+        if (location != null) {
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            builder.include(latLng);
+        }
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(builder.build(), 300);
+        map.animateCamera(cameraUpdate, 1000, null);
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
+        isMain = false;
     }
 }

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bottom_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_corner_rounded"
+    app:layout_insetEdge="bottom"
+    android:elevation="10dp"
+    android:paddingBottom="16dp"
+    android:clickable="true"
+    app:behavior_hideable="false"
+    app:behavior_peekHeight="60dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+    android:focusable="true">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_minus" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/show_by_type"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/button_administration_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@null"
+        android:src="@drawable/ic_marker_food"
+        app:layout_constraintEnd_toStartOf="@+id/button_education_sheet"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/administration"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@+id/button_administration_sheet"
+        app:layout_constraintStart_toStartOf="@+id/button_administration_sheet"
+        app:layout_constraintTop_toBottomOf="@id/button_administration_sheet" />
+
+    <ImageButton
+        android:id="@+id/button_education_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/ic_marker_education"
+        app:layout_constraintEnd_toStartOf="@+id/button_entertainment_sheet"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_administration_sheet"
+        app:layout_constraintTop_toTopOf="@+id/button_administration_sheet" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/education"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/button_education_sheet"
+        app:layout_constraintStart_toStartOf="@id/button_education_sheet"
+        app:layout_constraintTop_toTopOf="@+id/textView2" />
+
+    <ImageButton
+        android:id="@+id/button_entertainment_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/ic_marker_entertainment"
+        app:layout_constraintEnd_toStartOf="@+id/button_food_sheet"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_education_sheet"
+        app:layout_constraintTop_toTopOf="@+id/button_administration_sheet" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/entertainment"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/button_entertainment_sheet"
+        app:layout_constraintStart_toStartOf="@id/button_entertainment_sheet"
+        app:layout_constraintTop_toTopOf="@+id/textView2" />
+
+    <ImageButton
+        android:id="@+id/button_food_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/ic_marker_food"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_entertainment_sheet"
+        app:layout_constraintTop_toTopOf="@+id/button_administration_sheet" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/food_drink"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/button_food_sheet"
+        app:layout_constraintStart_toStartOf="@id/button_food_sheet"
+        app:layout_constraintTop_toTopOf="@+id/textView2" />
+
+    <ImageButton
+        android:id="@+id/button_gasoline_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@null"
+        android:src="@drawable/ic_marker_gasoline"
+        app:layout_constraintEnd_toStartOf="@+id/button_religion_sheet"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/gasoline"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/button_gasoline_sheet"
+        app:layout_constraintStart_toStartOf="@id/button_gasoline_sheet"
+        app:layout_constraintTop_toBottomOf="@id/button_gasoline_sheet" />
+
+    <ImageButton
+        android:id="@+id/button_religion_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/ic_marker_car_repair"
+        app:layout_constraintEnd_toStartOf="@+id/button_vehicle_sheet"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_gasoline_sheet"
+        app:layout_constraintTop_toTopOf="@id/button_gasoline_sheet" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/religion"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/button_religion_sheet"
+        app:layout_constraintStart_toStartOf="@id/button_religion_sheet"
+        app:layout_constraintTop_toTopOf="@id/textView6" />
+
+    <ImageButton
+        android:id="@+id/button_vehicle_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/ic_marker_car_repair"
+        app:layout_constraintEnd_toStartOf="@+id/button_other_sheet"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_religion_sheet"
+        app:layout_constraintTop_toTopOf="@id/button_gasoline_sheet" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/vehicle_repair"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/button_vehicle_sheet"
+        app:layout_constraintStart_toStartOf="@id/button_vehicle_sheet"
+        app:layout_constraintTop_toTopOf="@id/textView6" />
+
+    <ImageButton
+        android:id="@+id/button_other_sheet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/ic_marker_other"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/button_vehicle_sheet"
+        app:layout_constraintTop_toTopOf="@id/button_gasoline_sheet" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/other"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="@id/button_other_sheet"
+        app:layout_constraintStart_toStartOf="@id/button_other_sheet"
+        app:layout_constraintTop_toTopOf="@id/textView6" />
+</androidx.constraintlayout.widget.ConstraintLayout>

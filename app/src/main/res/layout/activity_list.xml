@@ -24,7 +24,7 @@
         app:behavior_peekHeight="64dp">
 
         <HorizontalScrollView
-            android:id="@+id/horizontalScrollView"
+            android:id="@+id/scroll_view_map"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -33,14 +33,14 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chips_filter"
+                android:id="@+id/chips_filter_map"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp">
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_food_drink"
+                    android:id="@+id/chip_map_food_drink"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
                     android:text="@string/food_drink" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_entertainment"
+                    android:id="@+id/chip_map_entertainment"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -56,7 +56,7 @@
                     android:text="@string/entertainment" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_education"
+                    android:id="@+id/chip_map_education"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
                     android:text="@string/education" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_vehicle_repair"
+                    android:id="@+id/chip_map_vehicle_repair"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -72,7 +72,7 @@
                     android:text="@string/vehicle_repair" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_religion"
+                    android:id="@+id/chip_map_religion"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -80,7 +80,7 @@
                     android:text="@string/religion" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_administration"
+                    android:id="@+id/chip_map_administration"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -88,7 +88,7 @@
                     android:text="@string/administration" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_gasoline"
+                    android:id="@+id/chip_map_gasoline"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -96,7 +96,7 @@
                     android:text="@string/gasoline" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_list_other"
+                    android:id="@+id/chip_map_other"
                     style="@style/Widget.MaterialComponents.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -115,7 +115,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/horizontalScrollView"
+            app:layout_constraintTop_toBottomOf="@+id/scroll_view_map"
             tools:listitem="@layout/item_place" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

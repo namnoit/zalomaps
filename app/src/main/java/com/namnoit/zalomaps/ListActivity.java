@@ -124,15 +124,15 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
                 startActivity(intent);
             }
         });
-        chipGroup = findViewById(R.id.chips_filter);
-        Chip chipFood = findViewById(R.id.chip_list_food_drink);
-        Chip chipEntertainment = findViewById(R.id.chip_list_entertainment);
-        Chip chipEducation = findViewById(R.id.chip_list_education);
-        Chip chipAdministration = findViewById(R.id.chip_list_administration);
-        Chip chipGasoline = findViewById(R.id.chip_list_gasoline);
-        Chip chipReligion = findViewById(R.id.chip_list_religion);
-        Chip chipVehicleRepair = findViewById(R.id.chip_list_vehicle_repair);
-        Chip chipOther = findViewById(R.id.chip_list_other);
+        chipGroup = findViewById(R.id.chips_filter_map);
+        Chip chipFood = findViewById(R.id.chip_map_food_drink);
+        Chip chipEntertainment = findViewById(R.id.chip_map_entertainment);
+        Chip chipEducation = findViewById(R.id.chip_map_education);
+        Chip chipAdministration = findViewById(R.id.chip_map_administration);
+        Chip chipGasoline = findViewById(R.id.chip_map_gasoline);
+        Chip chipReligion = findViewById(R.id.chip_map_religion);
+        Chip chipVehicleRepair = findViewById(R.id.chip_map_vehicle_repair);
+        Chip chipOther = findViewById(R.id.chip_map_other);
         chipFood.setOnCheckedChangeListener(chipCheckedListener);
         chipEntertainment.setOnCheckedChangeListener(chipCheckedListener);
         chipAdministration.setOnCheckedChangeListener(chipCheckedListener);
@@ -165,25 +165,25 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             int choice;
             switch (buttonView.getId()){
-                case R.id.chip_list_administration:
+                case R.id.chip_map_administration:
                     choice = PlaceModel.TYPE_ADMINISTRATION;
                     break;
-                case R.id.chip_list_education:
+                case R.id.chip_map_education:
                     choice = PlaceModel.TYPE_EDUCATION;
                     break;
-                case R.id.chip_list_entertainment:
+                case R.id.chip_map_entertainment:
                     choice = PlaceModel.TYPE_ENTERTAINMENT;
                     break;
-                case R.id.chip_list_food_drink:
+                case R.id.chip_map_food_drink:
                     choice = PlaceModel.TYPE_FOOD_DRINK;
                     break;
-                case R.id.chip_list_gasoline:
+                case R.id.chip_map_gasoline:
                     choice = PlaceModel.TYPE_GASOLINE;
                     break;
-                case R.id.chip_list_religion:
+                case R.id.chip_map_religion:
                     choice = PlaceModel.TYPE_RELIGION;
                     break;
-                case R.id.chip_list_vehicle_repair:
+                case R.id.chip_map_vehicle_repair:
                     choice = PlaceModel.TYPE_VEHICLE_REPAIR;
                     break;
                 default:
