@@ -20,7 +20,7 @@ public class PlaceModel {
     private String address;
     private boolean chosen;
 
-    public PlaceModel(int id, int type, double latitude, double longitude, String note, long time, String address){
+    PlaceModel(int id, int type, double latitude, double longitude, String note, long time, String address){
         this.id = id;
         this.type = type;
         this.latitude = latitude;

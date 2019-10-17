@@ -24,12 +24,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.ViewHolder> {
-    public static final String KEY_LATITUDE = "latitude";
-    public static final String KEY_LONGITUDE = "longitude";
-    public static final String ACTION_FOCUS = "focus";
     public static final String KEY_ID = "id";
     public static final String KEY_SELECTED_COUNT = "selected_count";
-    private static final String ITEM_POSITION = "item_position";
     private ArrayList<PlaceModel> list;
     private PlacesListManager listManager;
     private Context context;
@@ -96,12 +92,10 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                 break;
         }
         if (listManager.getSelectedCount() > 0){
-//            holder.buttonMore.setEnabled(false);
             holder.icon.setImageResource(listManager.isSelected(place) ?
                     R.drawable.ic_check : R.drawable.ic_uncheck);
         }
         else {
-//            holder.buttonMore.setEnabled(true);
             holder.icon.setImageResource(icon);
         }
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {

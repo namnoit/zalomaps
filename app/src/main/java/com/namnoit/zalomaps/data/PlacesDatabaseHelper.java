@@ -39,7 +39,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
 
     private static PlacesDatabaseHelper instance;
 
-    public static synchronized PlacesDatabaseHelper getInstance(Context context){
+    static synchronized PlacesDatabaseHelper getInstance(Context context){
         if (instance==null){
             instance = new PlacesDatabaseHelper(context.getApplicationContext());
         }
@@ -62,7 +62,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
 
-    public ArrayList<PlaceModel> getAllPlaces(){
+    ArrayList<PlaceModel> getAllPlaces(){
         ArrayList<PlaceModel> places = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_PLACES,
@@ -91,7 +91,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         return places;
     }
 
-    public PlaceModel getLatestPlace(){
+    PlaceModel getLatestPlace(){
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_PLACES,
                 new String[]{
@@ -124,7 +124,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         return place;
     }
 
-    public void insertPlace(String note, int type, double lat, double lng, long time, String address){
+    void insertPlace(String note, int type, double lat, double lng, long time, String address){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOTE, note);
@@ -137,7 +137,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void updatePlace(PlaceModel place){
+    void updatePlace(PlaceModel place){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_TYPE, place.getType());
@@ -153,7 +153,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void delete(int id){
+    void delete(int id){
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_PLACES, COLUMN_ID + "=?", new String[]{Integer.toString(id)});
         db.close();

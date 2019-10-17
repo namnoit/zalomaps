@@ -84,6 +84,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private ArrayList<Marker> markers;
     private BottomSheetBehavior sheetBehavior;
     private boolean isMain = true;
+    private LocationManager locationManager;
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -126,7 +127,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 Place place = Autocomplete.getPlaceFromIntent(data);
                 addPlace(Objects.requireNonNull(place.getLatLng()));
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                // TODO: Handle the error.
                 Status status = Autocomplete.getStatusFromIntent(data);
                 if (status.getStatusMessage() != null) {
                     Snackbar.make(parentView, status.getStatusMessage(), BaseTransientBottomBar.LENGTH_SHORT);
@@ -139,14 +139,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.home){
+        if (item.getItemId() == android.R.id.home) {
             if (isMain) {
                 finish();
-            }
-            else {
-                for (Marker marker : markers){
+            } else {
+                for (Marker marker : markers) {
                     marker.setVisible(true);
                 }
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_back);
                 isMain = true;
                 actionBar.setTitle(R.string.search_here);
             }
@@ -212,19 +212,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                        checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    checkPermissions();
+                    return;
+                }
+                Location location = locationManager != null ? locationManager
+                        .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
+                if (location != null) {
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
+                    map.animateCamera(cameraUpdate, 1000, null);
+                }
+                else {
+                    sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                    Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
+                }
             }
         });
         listManager = PlacesListManager.getInstance(getApplicationContext());
 
-    }
-
-    public void toggleBottomSheet() {
-        if (sheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-            sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        } else {
-            sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }
     }
 
     private void checkPermissions() {
@@ -242,7 +251,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             } else {
                 // Zoom to my location
                 map.setMyLocationEnabled(true);
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                 Location location = locationManager != null ? locationManager
                         .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
                 if (location != null) {
@@ -258,30 +267,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         checkPermissions();
-        // Set padding for status bar
-        int resourceId = getResources()
-                .getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            map.setPadding(0, getResources().getDimensionPixelSize(resourceId), 0, 0);
-        }
         map.getUiSettings().setMapToolbarEnabled(false);
-        map.getUiSettings().setMyLocationButtonEnabled(true);
+        map.getUiSettings().setMyLocationButtonEnabled(false);
         map.setOnMapClickListener(this);
         map.setOnMapLongClickListener(this);
         map.setOnMyLocationClickListener(this);
         map.setOnMarkerClickListener(this);
         map.setOnPoiClickListener(this);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            View mapView = mapFragment.getView();
-            assert mapView != null;
-            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-            RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams) locationButton.getLayoutParams();
-            rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-            rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-            rlp.setMargins(0, 180, 180, 0);
-        }
         showAllMarker();
     }
 
@@ -315,12 +307,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapClick(LatLng latLng) {
         if (actionBar.isShowing()) {
             actionBar.hide();
+            sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             fab.hide();
         } else {
             actionBar.show();
+            sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             fab.show();
         }
-        sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
     @Override
@@ -332,14 +325,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMyLocationClick(@NonNull Location location) {
         addPlace(new LatLng(location.getLatitude(), location.getLongitude()));
-    }
-
-    /*
-     * Return hue value (0 - 360) base on number of items and index of this item
-     * to set color for markers with different types
-     */
-    private int getHueValue(int numberOfItem, int index) {
-        return index == 0 ? 0 : index * 360 / numberOfItem;
     }
 
     @Override
@@ -447,6 +432,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                     .snippet(notes));
                             marker.showInfoWindow();
                             marker.setTag(listManager.getPlacesList().get(0));
+                            markers.add(marker);
                         }
                     }
                 })
@@ -467,41 +453,43 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onClick(View v) {
         int type;
+        String title;
         switch (v.getId()) {
             case R.id.button_administration_sheet:
                 type = PlaceModel.TYPE_ADMINISTRATION;
-                actionBar.setTitle(getResources().getString(R.string.administration));
+                title = getResources().getString(R.string.administration);
                 break;
             case R.id.button_education_sheet:
                 type = PlaceModel.TYPE_EDUCATION;
-                actionBar.setTitle(getResources().getString(R.string.education));
+                title = getResources().getString(R.string.education);
                 break;
             case R.id.button_entertainment_sheet:
                 type = PlaceModel.TYPE_ENTERTAINMENT;
-                actionBar.setTitle(getResources().getString(R.string.entertainment));
+                title = getResources().getString(R.string.entertainment);
                 break;
             case R.id.button_food_sheet:
                 type = PlaceModel.TYPE_FOOD_DRINK;
-                actionBar.setTitle(getResources().getString(R.string.food_drink));
+                title = getResources().getString(R.string.food_drink);
                 break;
             case R.id.button_gasoline_sheet:
                 type = PlaceModel.TYPE_GASOLINE;
-                actionBar.setTitle(getResources().getString(R.string.gasoline));
+                title = getResources().getString(R.string.gasoline);
                 break;
             case R.id.button_religion_sheet:
                 type = PlaceModel.TYPE_RELIGION;
-                actionBar.setTitle(getResources().getString(R.string.religion));
+                title = getResources().getString(R.string.religion);
                 break;
             case R.id.button_vehicle_sheet:
                 type = PlaceModel.TYPE_VEHICLE_REPAIR;
-                actionBar.setTitle(getResources().getString(R.string.vehicle_repair));
+                title = getResources().getString(R.string.vehicle_repair);
                 break;
             default:
                 type = PlaceModel.TYPE_OTHER;
-                actionBar.setTitle(getResources().getString(R.string.other));
+                title = getResources().getString(R.string.other);
                 break;
         }
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        int markerCount = 0;
         for (Marker marker : markers) {
             PlaceModel place = (PlaceModel) marker.getTag();
             if ((place != null ? place.getType() : -1) != type) {
@@ -509,7 +497,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             } else {
                 marker.setVisible(true);
                 builder.include(marker.getPosition());
+                markerCount++;
             }
+        }
+        title += " (" + markerCount + ")";
+        actionBar.setTitle(title);
+        isMain = false;
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
+        sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        if (markerCount == 0){
+            sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            Snackbar.make(parentView, R.string.alert_no_place_of_type, Snackbar.LENGTH_SHORT).show();
+            return;
         }
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
@@ -526,7 +525,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(builder.build(), 300);
         map.animateCamera(cameraUpdate, 1000, null);
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
-        isMain = false;
+
+
     }
 }

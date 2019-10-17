@@ -29,4 +29,6 @@
     <string name="address">Address</string>
     <string name="search_here">Search here</string>
     <string name="show_by_type">Show by type</string>
+    <string name="alert_no_place_of_type">No place of this type found</string>
+    <string name="alert_no_location">Location service is off</string>
 </resources>

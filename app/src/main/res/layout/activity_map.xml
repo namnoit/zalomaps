@@ -46,10 +46,11 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:backgroundTint="@color/colorPrimary"
+        app:borderWidth="0dp"
         app:layout_anchor="@id/bottom_sheet"
         app:layout_anchorGravity="top|end"
         app:layout_dodgeInsetEdges="bottom"
-        app:srcCompat="@android:drawable/ic_input_add"
+        app:srcCompat="@drawable/ic_my_location"
         app:tint="@color/colorWhite" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
