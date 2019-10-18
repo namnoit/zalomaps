@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/background_corner_rounded"
     android:clickable="true"
-    android:elevation="10dp"
+    android:elevation="15dp"
     android:focusable="true"
     android:paddingBottom="16dp"
     app:behavior_hideable="true"

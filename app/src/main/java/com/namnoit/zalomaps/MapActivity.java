@@ -233,7 +233,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         });
         listManager = PlacesListManager.getInstance(getApplicationContext());
+    }
 
+    @Override
+    public void onBackPressed() {
+        if (!isMain){
+            for (Marker marker : markers) {
+                marker.setVisible(true);
+            }
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_back);
+            isMain = true;
+            actionBar.setTitle(R.string.search_here);
+        }
+        else {
+            super.onBackPressed();
+        }
     }
 
     private void checkPermissions() {
@@ -248,18 +262,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 ActivityCompat.requestPermissions(this,
                         listPermissionNeeded.toArray(new String[0]),
                         PERMISSION_REQUEST_CODE);
-            } else {
-                // Zoom to my location
-                map.setMyLocationEnabled(true);
-                locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                Location location = locationManager != null ? locationManager
-                        .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
-                if (location != null) {
-                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
-                    map.animateCamera(cameraUpdate, 1000, null);
-                }
+                return;
             }
+        }
+        // Zoom to my location
+        map.setMyLocationEnabled(true);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Location location = locationManager != null ? locationManager
+                .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
+        if (location != null) {
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
+            map.animateCamera(cameraUpdate, 1000, null);
         }
     }
 
@@ -523,7 +537,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             builder.include(latLng);
         }
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(builder.build(), 300);
+        final int width = getResources().getDisplayMetrics().widthPixels;
+        final int height = getResources().getDisplayMetrics().heightPixels;
+        final int minMetric = Math.min(width, height);
+        final int padding = (int) (minMetric * 0.25);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
         map.animateCamera(cameraUpdate, 1000, null);
 
 
