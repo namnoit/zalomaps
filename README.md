@@ -43,3 +43,6 @@ In activity Java file, implements OnMapReadyCallback, override onMapReady() and 
 ### Marker
 
 Marker is used to show bookmark in map. 
+To add marker to map, call addMarker() on GoogleMap object, and pass a MarkerOption which define some infomation of the marker, such as **position** (LatLng), icon, title, snippet,...
+Each marker has a unique identifier, and can store a reference to a place model that save in list, so I save markers to a list for manage easilier.\
+Markers is clickable like views.
