@@ -30,9 +30,9 @@ For more detail, you can visit [Get an API key](https://developers.google.com/ma
 
 ## Core components in this project
 
-### SQliteOpenHelper
+### SQLite Database
 
-SQLiteOpenHelper is used for storing saved places which are bookmarked by user. Saved fields include *latitude, longitude, tag, notes, anddress,...*, in which tag, notes is entered by user, latitude, longitude is get from Maps API, and address is get from Location API.\
+SQLiteOpenHelper is used for storing saved places as database which are bookmarked by user. Saved fields include *latitude, longitude, tag, notes, anddress,...*, in which tag, notes is entered by user, latitude, longitude is get from Maps API, and address is get from Location API.\
 The following methods are used for interacting with database:
 - *insertPlace()* - To insert new marked place to database.
 - *updatePlace()* - To update exist place in database.
@@ -84,6 +84,26 @@ try {
 ```
 Result:\
 <img src=https://i.imgur.com/03EuFXI.png height="100">
+
+### Material Components
+Material components is used for a modern UI.\
+In the dependencies section of app-level **build.gradle** file, add a dependency to the Maps SDK for Android:
+```sh
+implementation 'com.google.android.material:material:1.1.0-beta01'
+```
+
+#### Chips
+<img src=https://i.imgur.com/b5j5kVd.png height="50">
+<img src=https://i.imgur.com/8OxiWCz.png height="150">
+
+#### Material TextField
+<img src=https://i.imgur.com/mxufhss.png height="200">
+
+#### Floating Action Button
+<img src=https://i.imgur.com/uo5g5ZM.png height="150">
+
+#### Bottom sheet
+<img src=https://i.imgur.com/J0Z2FvS.png height="300">
 
 ## Usage of Google Maps SDK
 In the dependencies section of app-level **build.gradle** file, add a dependency to the Maps SDK for Android:
