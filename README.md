@@ -32,7 +32,7 @@ For more detail, you can visit [Get an API key](https://developers.google.com/ma
 
 ### SQLite Database
 
-SQLiteOpenHelper is used for storing saved places as database which are bookmarked by user. Saved fields include *latitude, longitude, tag, notes, anddress,...*, in which tag, notes is entered by user, latitude, longitude is get from Maps API, and address is get from Location API.\
+SQLiteOpenHelper is used for storing saved places as SQLite database which are bookmarked by user. Saved fields include *latitude, longitude, tag, notes, anddress,...*, in which tag, notes is entered by user, latitude, longitude is get from Maps API, and address is get from Location API.\
 The following methods are used for interacting with database:
 - *insertPlace()* - To insert new marked place to database.
 - *updatePlace()* - To update exist place in database.
@@ -86,8 +86,8 @@ Result:\
 <img src=https://i.imgur.com/03EuFXI.png height="100">
 
 ### Material Components
-Material components is used for a modern UI.\
-In the dependencies section of app-level **build.gradle** file, add a dependency to the Maps SDK for Android:
+Material components is used for building a modern UI.\
+In the dependencies section of app-level **build.gradle** file, add a dependency:
 ```sh
 implementation 'com.google.android.material:material:1.1.0-beta01'
 ```
