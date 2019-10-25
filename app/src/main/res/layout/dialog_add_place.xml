@@ -29,56 +29,56 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_food_drink"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/food_drink" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_entertainment"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/entertainment" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_education"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/education" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_vehicle_repair"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/vehicle_repair" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_religion"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/religion" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_administration"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/administration" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_gasoline"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/gasoline" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chip_other"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+                style="@style/Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/other" />

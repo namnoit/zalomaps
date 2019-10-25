@@ -12,6 +12,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -26,6 +28,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.namnoit.zalomaps.data.PlaceModel;
 import com.namnoit.zalomaps.data.PlacesListManager;
+
+import java.util.Objects;
 
 
 public class ListActivity extends AppCompatActivity implements SwipeController.OnSwipedListener {
@@ -103,6 +107,10 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            getWindow().setStatusBarColor(Color.parseColor("#b0bec5"));
+        }
+        Objects.requireNonNull(getSupportActionBar()).setElevation(0f);
         listManager = PlacesListManager.getInstance(getApplicationContext());
         RecyclerView recyclerView = findViewById(R.id.recycler_view);
         LinearLayoutManager layoutManager =

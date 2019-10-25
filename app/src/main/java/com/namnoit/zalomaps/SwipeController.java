@@ -29,7 +29,7 @@ public class SwipeController extends ItemTouchHelper.Callback {
         background = new ColorDrawable();
         clearPaint = new Paint();
         clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        deleteDrawable = ContextCompat.getDrawable(context, R.drawable.ic_delete);
+        deleteDrawable = ContextCompat.getDrawable(context, R.drawable.ic_delete_white);
         assert deleteDrawable != null;
         intrinsicWidth = deleteDrawable.getIntrinsicWidth();
         intrinsicHeight = deleteDrawable.getIntrinsicHeight();
