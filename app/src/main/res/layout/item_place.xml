@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
     android:background="@drawable/ripple"
     android:clickable="true"
     android:focusable="true">
@@ -12,7 +11,7 @@
     <ImageButton
         android:id="@+id/button_item_more"
         android:layout_width="48dp"
-        android:layout_height="64dp"
+        android:layout_height="80dp"
         android:background="@drawable/ripple"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -31,24 +30,45 @@
         tools:srcCompat="@drawable/ic_marker_education" />
 
     <TextView
-        android:id="@+id/text_item_note"
+        android:id="@+id/text_item_address"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:lines="1"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/image_item"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/text_item_description"
         app:layout_constraintEnd_toStartOf="@+id/button_item_more"
-        app:layout_constraintStart_toStartOf="@+id/text_item_category" />
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="@+id/text_item_category"
+        app:layout_constraintTop_toBottomOf="@+id/text_item_category" />
+
+    <TextView
+        android:id="@+id/text_item_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:lines="1"
+        android:textColor="@android:color/tertiary_text_dark"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/button_item_more"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="@+id/text_item_category"
+        app:layout_constraintTop_toBottomOf="@+id/text_item_address" />
 
     <TextView
         android:id="@+id/text_item_category"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:lines="1"
         android:textSize="17sp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/text_item_address"
         app:layout_constraintEnd_toStartOf="@+id/button_item_more"
+        app:layout_constraintHorizontal_bias="1"
         app:layout_constraintStart_toEndOf="@+id/image_item"
-        app:layout_constraintTop_toTopOf="@+id/image_item" />
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

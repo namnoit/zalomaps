@@ -21,15 +21,15 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdate;
@@ -62,6 +62,7 @@ import com.namnoit.zalomaps.data.PlaceModel;
 import com.namnoit.zalomaps.data.PlacesListManager;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -103,10 +104,20 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .setTitle(R.string.title_permission_denied)
                     .setMessage(R.string.message_permission_denied)
                     .setCancelable(false)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             finish();
+                        }
+                    })
+                    .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent();
+                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+                            intent.setData(uri);
+                            startActivity(intent);
                         }
                     })
                     .show();
@@ -115,8 +126,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private static final int PERMISSION_REQUEST_CODE = 1;
     private String[] appPermissions = {
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION
     };
 
     @Override
@@ -214,8 +224,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                        checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     checkPermissions();
                     return;
                 }
@@ -302,7 +311,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .position(new LatLng(place.getLatitude(), place.getLongitude()))
                     .icon(vectorToBitmap(PlaceModel.getDrawableResource(place.getType())))
                     .title(PlaceModel.getTypeInString(place.getType()))
-                    .snippet(place.getNote()));
+                    .snippet(place.getDescription()));
             marker.setTag(place);
             markers.add(marker);
             if (id == place.getId()) {
@@ -351,7 +360,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (place != null) {
             textAddress.setText(place.getAddress());
             final int oldType = place.getType();
-            textNotes.setText(place.getNote());
+            textNotes.setText(place.getDescription());
             switch (place.getType()) {
                 case PlaceModel.TYPE_FOOD_DRINK:
                     chipGroup.check(R.id.chip_food_drink);
@@ -389,7 +398,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 marker.setIcon(vectorToBitmap(PlaceModel.getDrawableResource(newType)));
                                 place.setType(newType);
                             }
-                            place.setNote(Objects.requireNonNull(textNotes.getText()).toString());
+                            place.setDescription(Objects.requireNonNull(textNotes.getText()).toString());
                             listManager.updatePlace(place);
                         }
                     })
@@ -433,24 +442,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         TextInputEditText textNotes = view.findViewById(R.id.text_notes_add_place);
                         if (textNotes != null && textNotes.getText() != null) {
                             String notes = textNotes.getText().toString();
-                            listManager.insertPlace(notes,
+
+                            InsertionTask insertionTask = new InsertionTask(
+                                    MapActivity.this,
                                     type,
-                                    latLng.latitude,
-                                    latLng.longitude,
-                                    System.currentTimeMillis(),
+                                    notes,
+                                    latLng,
                                     finalAddress);
-                            Marker marker = map.addMarker(new MarkerOptions()
-                                    .position(latLng)
-                                    .icon(vectorToBitmap(PlaceModel.getDrawableResource(type)))
-                                    .title(PlaceModel.getTypeInString(type))
-                                    .snippet(notes));
-                            marker.showInfoWindow();
-                            marker.setTag(listManager.getPlacesList().get(0));
-                            markers.add(marker);
+                            insertionTask.execute();
                         }
                     }
                 })
                 .show();
+    }
+
+    void addMarker(LatLng latLng, int type, String notes){
+        Marker marker = map.addMarker(new MarkerOptions()
+                .position(latLng)
+                .icon(vectorToBitmap(PlaceModel.getDrawableResource(type)))
+                .title(PlaceModel.getTypeInString(type))
+                .snippet(notes));
+        marker.showInfoWindow();
+        marker.setTag(listManager.getPlacesList().get(0));
+        markers.add(marker);
     }
 
     private BitmapDescriptor vectorToBitmap(@DrawableRes int id) {
@@ -526,8 +540,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             checkPermissions();
             return;
         }
@@ -545,5 +558,43 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         map.animateCamera(cameraUpdate, 1000, null);
 
 
+    }
+
+    private static class InsertionTask extends AsyncTask<Void, Void, Void> {
+        private WeakReference<MapActivity> activityReference;
+        private int type;
+        private String notes, address;
+        private LatLng latLng;
+
+        InsertionTask(MapActivity context, int type, String notes, LatLng latLng, String address){
+            activityReference = new WeakReference<>(context);
+            this.type = type;
+            this.notes = notes;
+            this.latLng = latLng;
+            this.address = address;
+        }
+        @Override
+        protected Void doInBackground(Void... voids) {
+            MapActivity activity = activityReference.get();
+            PlacesListManager.getInstance(activity).insertPlace(notes,
+                    type,
+                    latLng.latitude,
+                    latLng.longitude,
+                    System.currentTimeMillis(),
+                    address);
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            activityReference.get().findViewById(R.id.progress_bar_map).setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            MapActivity activity = activityReference.get();
+            activity.findViewById(R.id.progress_bar_map).setVisibility(View.GONE);
+            activity.addMarker(latLng,type,notes);
+        }
     }
 }

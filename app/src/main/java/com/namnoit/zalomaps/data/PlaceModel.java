@@ -14,19 +14,18 @@ public class PlaceModel {
 
     private int id;
     private int type;
-    private String note;
-    private long time;
+    private String description;
+    private double distance;
     private double latitude, longitude;
     private String address;
     private boolean chosen;
 
-    PlaceModel(int id, int type, double latitude, double longitude, String note, long time, String address){
+    PlaceModel(int id, int type, double latitude, double longitude, String description, String address){
         this.id = id;
         this.type = type;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.note = note;
-        this.time = time;
+        this.description = description;
         this.address = address;
         chosen = true;
     }
@@ -126,20 +125,20 @@ public class PlaceModel {
         this.longitude = longitude;
     }
 
-    public String getNote() {
-        return note;
+    public String getDescription() {
+        return description;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public long getTime() {
-        return time;
+    public double getDistance() {
+        return distance;
     }
 
-    public void setTime(long time) {
-        this.time = time;
+    public void setDistance(double distance) {
+        this.distance = distance;
     }
 
     public void setChosen(boolean chosen) {

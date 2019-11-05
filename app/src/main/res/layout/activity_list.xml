@@ -6,119 +6,50 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_map"
-        style="@style/Widget.MaterialComponents.FloatingActionButton"
+        style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:backgroundTint="@color/colorAccent"
-        app:borderWidth="0dp"
-        app:srcCompat="@drawable/ic_map"
-        app:tint="@color/colorWhite" />
+        android:text="@string/map"
+        android:textColor="@color/colorWhite"
+        app:icon="@drawable/ic_map"
+        app:iconTint="@color/colorWhite"
+        app:borderWidth="0dp"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <TextView
+        android:id="@+id/text_empty_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="24dp"
+        android:drawableTop="@drawable/ic_list_empty"
+        android:fontFamily="sans-serif"
+        android:text="@string/empty_list_message"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        android:textSize="18sp"
+        android:visibility="visible" />
+
+    <include
+        android:id="@+id/layout_list"
+        layout="@layout/layout_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:behavior_hideable="true"
-        app:behavior_peekHeight="64dp">
+        android:visibility="gone" />
 
-        <HorizontalScrollView
-            android:id="@+id/scroll_view_map"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbarSize="2dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chips_filter_map"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp">
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_food_drink"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/food_drink" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_entertainment"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/entertainment" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_education"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/education" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_vehicle_repair"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/vehicle_repair" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_religion"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/religion" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_administration"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/administration" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_gasoline"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/gasoline" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_map_other"
-                    style="@style/Widget.MaterialComponents.Chip.Filter"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/other" />
-            </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:clipToPadding="false"
-            android:paddingBottom="72dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scroll_view_map"
-            tools:listitem="@layout/item_place" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <ProgressBar
+        android:id="@+id/progress_bar_list"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="gone" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

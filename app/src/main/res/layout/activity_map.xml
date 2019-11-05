@@ -37,6 +37,14 @@
             app:titleTextColor="@color/common_google_signin_btn_text_light"
             app:title="@string/search_here" />
 
+    <ProgressBar
+        android:id="@+id/progress_bar_map"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
     <include layout="@layout/bottom_sheet"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

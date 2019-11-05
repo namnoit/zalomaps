@@ -3,12 +3,15 @@ package com.namnoit.zalomaps;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -22,6 +25,8 @@ import com.namnoit.zalomaps.data.PlacesListManager;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.ViewHolder> {
     public static final String KEY_ID = "id";
@@ -54,7 +59,6 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
         holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
-        holder.notes.setText(list.get(position).getNote());
         final PlaceModel place = list.get(position);
         int icon;
         switch (place.getType()){
@@ -91,6 +95,8 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                 icon = R.drawable.ic_marker_other;
                 break;
         }
+        holder.address.setText(list.get(position).getAddress());
+        holder.description.setText(list.get(position).getDescription());
         if (listManager.getSelectedCount() > 0){
             holder.icon.setImageResource(listManager.isSelected(place) ?
                     R.drawable.ic_check : R.drawable.ic_uncheck);
@@ -132,7 +138,7 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                     final TextInputEditText textAddress = infoDialog.findViewById(R.id.text_address);
                     textAddress.setText(place.getAddress());
                     final int oldType = place.getType();
-                    textNotes.setText(place.getNote());
+                    textNotes.setText(place.getDescription());
                     switch (place.getType()) {
                         case PlaceModel.TYPE_FOOD_DRINK:
                             chipGroup.check(R.id.chip_food_drink);
@@ -169,7 +175,7 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                                     if (newType != oldType) {
                                         place.setType(newType);
                                     }
-                                    place.setNote(Objects.requireNonNull(textNotes.getText()).toString());
+                                    place.setDescription(Objects.requireNonNull(textNotes.getText()).toString());
                                     listManager.updatePlace(place);
                                     notifyItemChanged(position);
                                 }
@@ -178,8 +184,22 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
                             .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    listManager.delete(place);
-                                    notifyItemRemoved(position);
+                                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                                    final Handler handler = new Handler(Looper.getMainLooper());
+                                    executor.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            listManager.delete(place);
+                                            handler.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    notifyItemRemoved(position);
+                                                    notifyItemRangeChanged(position,list.size());
+                                                }
+                                            });
+                                        }
+                                    });
+
                                 }
                             })
                             .show();
@@ -216,13 +236,14 @@ public class PlacesListAdapter extends RecyclerView.Adapter<PlacesListAdapter.Vi
 
     class ViewHolder extends RecyclerView.ViewHolder{
         private ImageView icon;
-        private TextView category, notes;
+        private TextView category, address, description;
         private ImageButton buttonMore;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             icon = itemView.findViewById(R.id.image_item);
             category = itemView.findViewById(R.id.text_item_category);
-            notes = itemView.findViewById(R.id.text_item_note);
+            address = itemView.findViewById(R.id.text_item_address);
+            description = itemView.findViewById(R.id.text_item_description);
             buttonMore = itemView.findViewById(R.id.button_item_more);
         }
     }

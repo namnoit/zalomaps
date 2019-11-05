@@ -21,7 +21,6 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_LATITUDE = "latitude";
     private static final String COLUMN_LONGITUDE = "longitude";
     private static final String COLUMN_NOTE = "note";
-    private static final String COLUMN_TIME = "time";
     private static final String COLUMN_ADDRESS = "address";
     private static final String TEXT_TYPE = " TEXT";
     private static final String INT_TYPE = " INTEGER";
@@ -33,7 +32,6 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
             COLUMN_LATITUDE + REAL_TYPE + COMMA_SEP +
             COLUMN_LONGITUDE + REAL_TYPE + COMMA_SEP +
             COLUMN_NOTE + TEXT_TYPE + COMMA_SEP +
-            COLUMN_TIME + INT_TYPE + COMMA_SEP +
             COLUMN_ADDRESS + TEXT_TYPE + ")";
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + TABLE_PLACES;
 
@@ -67,12 +65,12 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_PLACES,
                 new String[]{COLUMN_ID, COLUMN_TYPE, COLUMN_LATITUDE, COLUMN_LONGITUDE, COLUMN_NOTE,
-                        COLUMN_TIME, COLUMN_ADDRESS},
+                        COLUMN_ADDRESS},
                 null,
                 null,
                 null,
                 null,
-                COLUMN_TIME + " DESC");
+                COLUMN_ID + " DESC");
         if (cursor.moveToFirst()) {
             do {
                 PlaceModel place = new PlaceModel(
@@ -81,7 +79,6 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
                         cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)),
                         cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGITUDE)),
                         cursor.getString(cursor.getColumnIndex(COLUMN_NOTE)),
-                        cursor.getInt(cursor.getColumnIndex(COLUMN_TIME)),
                         cursor.getString(cursor.getColumnIndex(COLUMN_ADDRESS)));
                 places.add(place);
             } while (cursor.moveToNext());
@@ -100,7 +97,6 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
                         COLUMN_NOTE,
                         COLUMN_LATITUDE,
                         COLUMN_LONGITUDE,
-                        COLUMN_TIME,
                         COLUMN_ADDRESS
                 },
                 null,
@@ -116,7 +112,6 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
                     cursor.getDouble(cursor.getColumnIndex(COLUMN_LATITUDE)),
                     cursor.getDouble(cursor.getColumnIndex(COLUMN_LONGITUDE)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_NOTE)),
-                    cursor.getLong(cursor.getColumnIndex(COLUMN_TIME)),
                     cursor.getString(cursor.getColumnIndex(COLUMN_ADDRESS)));
         }
         cursor.close();
@@ -124,14 +119,13 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         return place;
     }
 
-    void insertPlace(String note, int type, double lat, double lng, long time, String address){
+    void insertPlace(String note, int type, double lat, double lng, String address){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOTE, note);
         values.put(COLUMN_TYPE, type);
         values.put(COLUMN_LATITUDE, lat);
         values.put(COLUMN_LONGITUDE, lng);
-        values.put(COLUMN_TIME, time);
         values.put(COLUMN_ADDRESS, address);
         db.insert(TABLE_PLACES,null,values);
         db.close();
@@ -143,8 +137,7 @@ public class PlacesDatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TYPE, place.getType());
         values.put(COLUMN_LATITUDE, place.getLatitude());
         values.put(COLUMN_LONGITUDE, place.getLongitude());
-        values.put(COLUMN_NOTE,place.getNote());
-        values.put(COLUMN_TIME,place.getTime());
+        values.put(COLUMN_NOTE,place.getDescription());
         values.put(COLUMN_ADDRESS,place.getAddress());
         db.update(TABLE_PLACES,
                 values,
