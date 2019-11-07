@@ -2,11 +2,6 @@ package com.namnoit.zalomaps.data;
 
 import android.content.Context;
 import android.location.Location;
-import android.location.LocationManager;
-import android.os.AsyncTask;
-import android.widget.Toast;
-
-import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +32,7 @@ public class PlacesListManager {
         return places;
     }
 
-    public void insertPlace(String note, int type, double lat, double lng, long time, String address){
+    public void insertPlace(String note, int type, double lat, double lng, String address){
         db.insertPlace(note,type,lat,lng,address);
         PlaceModel place = db.getLatestPlace();
         places.add(0,place);

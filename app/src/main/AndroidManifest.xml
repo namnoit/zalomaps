@@ -3,6 +3,11 @@
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="com.namnoit.zalomaps">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <dist:module dist:instant="true" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,9 +16,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Map">
         <activity
-            android:name=".ListActivity"
+            android:name=".SettingsActivity"
             android:theme="@style/AppTheme"
-            android:launchMode="singleTop">
+            android:label="@string/settings"
+            android:parentActivityName=".ListActivity"/>
+        <activity
+            android:name=".ListActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
@@ -21,18 +31,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MapActivity"
+        <activity
+            android:name=".MapActivity"
             android:parentActivityName=".ListActivity"
-            android:theme="@style/AppTheme.Map">
-
-        </activity>
+            android:theme="@style/AppTheme.Map"></activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
     </application>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <dist:module dist:instant="true" />
 
 </manifest>

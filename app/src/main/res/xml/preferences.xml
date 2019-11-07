@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:title="@string/feedback"
+        android:summary="@string/feedback_description"
+        android:icon="@drawable/ic_email">
+        <intent
+            android:action="android.intent.action.SENDTO"
+            android:data="@string/email_uri" />
+    </Preference>
+    <Preference
+        android:title="@string/rate_us"
+        android:summary="@string/rate_us_description"
+        android:icon="@drawable/ic_play_store">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="@string/rate_uri" />
+    </Preference>
+    <Preference
+        android:key="help"
+        android:title="@string/help"
+        android:icon="@drawable/ic_help">
+
+    </Preference>
+    <Preference
+        android:title="@string/uninstall"
+        android:summary="@string/uninstall_description"
+        android:icon="@drawable/ic_delete">
+        <intent
+            android:action="android.intent.action.DELETE"
+            android:data="package:com.namnoit.zalomaps" />
+    </Preference>
+    <Preference
+        android:key="about"
+        android:title="@string/about_app"
+        android:icon="@drawable/ic_info"/>
+</PreferenceScreen>

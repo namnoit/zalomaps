@@ -1,14 +1,5 @@
 package com.namnoit.zalomaps;
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -30,6 +21,15 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdate;
@@ -77,6 +77,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         GoogleMap.OnMarkerClickListener,
         View.OnClickListener {
     private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
+    private static final int PERMISSION_REQUEST_CODE = 1;
     private GoogleMap map;
     private PlacesListManager listManager;
     private FloatingActionButton fab;
@@ -86,6 +87,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private BottomSheetBehavior sheetBehavior;
     private boolean isMain = true;
     private LocationManager locationManager;
+    private String[] appPermissions = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -104,7 +109,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .setTitle(R.string.title_permission_denied)
                     .setMessage(R.string.message_permission_denied)
                     .setCancelable(false)
-                    .setNegativeButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             finish();
@@ -123,11 +128,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     .show();
         }
     }
-
-    private static final int PERMISSION_REQUEST_CODE = 1;
-    private String[] appPermissions = {
-            Manifest.permission.ACCESS_FINE_LOCATION
-    };
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -224,18 +224,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View view) {
                 sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                         checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     checkPermissions();
                     return;
                 }
                 Location location = locationManager != null ? locationManager
-                        .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
+                        .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
                 if (location != null) {
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
                     map.animateCamera(cameraUpdate, 1000, null);
-                }
-                else {
+                } else {
                     sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                     Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
                 }
@@ -246,15 +246,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void onBackPressed() {
-        if (!isMain){
+        if (!isMain) {
             for (Marker marker : markers) {
                 marker.setVisible(true);
             }
             actionBar.setHomeAsUpIndicator(R.drawable.ic_back);
             isMain = true;
             actionBar.setTitle(R.string.search_here);
-        }
-        else {
+        } else {
             super.onBackPressed();
         }
     }
@@ -278,7 +277,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         map.setMyLocationEnabled(true);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         Location location = locationManager != null ? locationManager
-                .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
+                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
         if (location != null) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
@@ -456,7 +455,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .show();
     }
 
-    void addMarker(LatLng latLng, int type, String notes){
+    void addMarker(LatLng latLng, int type, String notes) {
         Marker marker = map.addMarker(new MarkerOptions()
                 .position(latLng)
                 .icon(vectorToBitmap(PlaceModel.getDrawableResource(type)))
@@ -533,7 +532,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         isMain = false;
         actionBar.setHomeAsUpIndicator(R.drawable.ic_close);
         sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        if (markerCount == 0){
+        if (markerCount == 0) {
             sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
             Snackbar.make(parentView, R.string.alert_no_place_of_type, Snackbar.LENGTH_SHORT).show();
             return;
@@ -545,7 +544,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             return;
         }
         Location location = locationManager != null ? locationManager
-                .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
+                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
         if (location != null) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
             builder.include(latLng);
@@ -566,13 +565,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         private String notes, address;
         private LatLng latLng;
 
-        InsertionTask(MapActivity context, int type, String notes, LatLng latLng, String address){
+        InsertionTask(MapActivity context, int type, String notes, LatLng latLng, String address) {
             activityReference = new WeakReference<>(context);
             this.type = type;
             this.notes = notes;
             this.latLng = latLng;
             this.address = address;
         }
+
         @Override
         protected Void doInBackground(Void... voids) {
             MapActivity activity = activityReference.get();
@@ -580,7 +580,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     type,
                     latLng.latitude,
                     latLng.longitude,
-                    System.currentTimeMillis(),
                     address);
             return null;
         }
@@ -594,7 +593,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         protected void onPostExecute(Void aVoid) {
             MapActivity activity = activityReference.get();
             activity.findViewById(R.id.progress_bar_map).setVisibility(View.GONE);
-            activity.addMarker(latLng,type,notes);
+            activity.addMarker(latLng, type, notes);
         }
     }
 }

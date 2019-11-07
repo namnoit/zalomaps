@@ -1,15 +1,5 @@
 package com.namnoit.zalomaps;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,6 +23,16 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
@@ -43,25 +43,21 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
+
 
 public class ListActivity extends AppCompatActivity implements SwipeController.OnSwipedListener {
     public static final String BROADCAST_SELECT = "select";
     public static final String BROADCAST_START_SELECTING = "start_selecting";
     public static final String BROADCAST_FINISH_SELECTING = "finish_selecting";
     private static final int PERMISSION_REQUEST_CODE = 1;
+    ArrayList<Chip> chips;
+    View scroll;
     private PlacesListManager listManager;
     private PlacesListAdapter adapter;
     private ActionMode mActionMode;
     private ExtendedFloatingActionButton fab_map;
-    private Chip chipFood, chipEntertainment,
-            chipEducation,
-            chipAdministration,
-            chipGasoline,
-            chipReligion,
-            chipVehicleRepair,
-            chipOther;
-    ArrayList<Chip> chips;
-    View scroll;
     private Location myLocation;
     private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
@@ -125,125 +121,6 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
             }
         }
     };
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        boolean permissionsAccepted = true;
-        for (int grantResult : grantResults) {
-            if (grantResult < 0) {
-                permissionsAccepted = false;
-            }
-        }
-        if (permissionsAccepted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
-                        PackageManager.PERMISSION_GRANTED) {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            myLocation = locationManager != null ?
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
-            PlacesLoaderTask loaderTask = new PlacesLoaderTask(this);
-            loaderTask.execute();
-        } else {
-            new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle)
-                    .setTitle(R.string.title_permission_denied)
-                    .setMessage(R.string.message_permission_denied)
-                    .setCancelable(false)
-                    .setNegativeButton(R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            finish();
-                        }
-                    })
-                    .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Uri uri = Uri.fromParts("package", getPackageName(), null);
-                            Intent intent = new Intent();
-                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                    .setData(uri);
-                            startActivity(intent);
-                            finish();
-                        }
-                    })
-                    .show();
-        }
-    }
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            getWindow().setStatusBarColor(Color.parseColor("#b0bec5"));
-        }
-        Objects.requireNonNull(getSupportActionBar()).setElevation(0f);
-        getLocation();
-
-    }
-
-    private void getLocation() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
-                        PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSION_REQUEST_CODE);
-        }
-        else {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            myLocation = locationManager != null ? locationManager
-                    .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
-            PlacesLoaderTask loaderTask = new PlacesLoaderTask(this);
-            loaderTask.execute();
-        }
-    }
-
-    public void updateDistance(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
-                        PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSION_REQUEST_CODE);
-        }
-        else {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            myLocation = locationManager != null ? locationManager
-                    .getLastKnownLocation(LocationManager.GPS_PROVIDER) : null;
-            if (myLocation != null) {
-                listManager.updateDistances(myLocation);
-                adapter.notifyDataSetChanged();
-            }
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (adapter != null && listManager != null) {
-            for (Chip chip : chips) {
-                if (!chip.isSelected()) {
-                    chip.performClick();
-                    chip.performClick();
-                }
-            }
-        }
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
-                new IntentFilter(BROADCAST_SELECT));
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
-                new IntentFilter(BROADCAST_START_SELECTING));
-        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
-                new IntentFilter(BROADCAST_FINISH_SELECTING));
-    }
-
-    @Override
-    protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
-        super.onPause();
-    }
-
     private Chip.OnCheckedChangeListener chipCheckedListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -284,10 +161,165 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
     };
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        boolean permissionsAccepted = true;
+        for (int grantResult : grantResults) {
+            if (grantResult < 0) {
+                permissionsAccepted = false;
+            }
+        }
+        if (permissionsAccepted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
+                        PackageManager.PERMISSION_GRANTED) {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            myLocation = locationManager != null ?
+                    locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
+            PlacesLoaderTask loaderTask = new PlacesLoaderTask(this);
+            loaderTask.execute();
+        } else {
+            new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle)
+                    .setTitle(R.string.title_permission_denied)
+                    .setMessage(R.string.message_permission_denied)
+                    .setCancelable(false)
+                    .setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                        }
+                    })
+                    .setPositiveButton(R.string.open_settings, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Uri uri = Uri.fromParts("package", getPackageName(), null);
+                            Intent intent = new Intent();
+                            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                    .setData(uri);
+                            startActivity(intent);
+                            finish();
+                        }
+                    })
+                    .show();
+        }
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_list);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            getWindow().setStatusBarColor(Color.parseColor("#b0bec5"));
+        }
+        Objects.requireNonNull(getSupportActionBar()).setElevation(0f);
+        getLocation();
+
+    }
+
+    private void getLocation() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
+                        PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSION_REQUEST_CODE);
+        } else {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            myLocation = locationManager != null ? locationManager
+                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
+            PlacesLoaderTask loaderTask = new PlacesLoaderTask(this);
+            loaderTask.execute();
+        }
+    }
+
+    public void updateDistance() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
+                        PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSION_REQUEST_CODE);
+        } else {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            myLocation = locationManager != null ? locationManager
+                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
+            if (myLocation != null) {
+                listManager.updateDistances(myLocation);
+                adapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (adapter != null && listManager != null) {
+            for (Chip chip : chips) {
+                if (!chip.isChecked()) {
+                    int choice;
+                    switch (chip.getId()) {
+                        case R.id.chip_map_administration:
+                            choice = PlaceModel.TYPE_ADMINISTRATION;
+                            break;
+                        case R.id.chip_map_education:
+                            choice = PlaceModel.TYPE_EDUCATION;
+                            break;
+                        case R.id.chip_map_entertainment:
+                            choice = PlaceModel.TYPE_ENTERTAINMENT;
+                            break;
+                        case R.id.chip_map_food_drink:
+                            choice = PlaceModel.TYPE_FOOD_DRINK;
+                            break;
+                        case R.id.chip_map_gasoline:
+                            choice = PlaceModel.TYPE_GASOLINE;
+                            break;
+                        case R.id.chip_map_religion:
+                            choice = PlaceModel.TYPE_RELIGION;
+                            break;
+                        case R.id.chip_map_vehicle_repair:
+                            choice = PlaceModel.TYPE_VEHICLE_REPAIR;
+                            break;
+                        default:
+                            choice = PlaceModel.TYPE_OTHER;
+                            break;
+                    }
+                    for (PlaceModel place : listManager.getPlacesList()) {
+                        if (place.getType() == choice && place.isChosen()) {
+                            place.setChosen(false);
+                        }
+                    }
+                }
+            }
+            adapter.notifyDataSetChanged();
+        }
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
+                new IntentFilter(BROADCAST_SELECT));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
+                new IntentFilter(BROADCAST_START_SELECTING));
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(receiver,
+                new IntentFilter(BROADCAST_FINISH_SELECTING));
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+        super.onPause();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.menu_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        }
+        return true;
+    }
 
     private void deleteSelectedPlaces() {
         new MaterialAlertDialogBuilder(ListActivity.this, R.style.MaterialDialogStyle)
@@ -319,7 +351,7 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
 
     void doAfterDeleteOne(int position) {
         adapter.notifyItemRemoved(position);
-        adapter.notifyItemRangeChanged(position, listManager.getPlacesList().size());
+        adapter.notifyItemRangeChanged(position, listManager.size());
     }
 
     void setUp(PlacesListManager placesListManager) {
@@ -365,14 +397,14 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
                 swipe.setRefreshing(false);
             }
         });
-        chipFood = findViewById(R.id.chip_map_food_drink);
-        chipEntertainment = findViewById(R.id.chip_map_entertainment);
-        chipEducation = findViewById(R.id.chip_map_education);
-        chipAdministration = findViewById(R.id.chip_map_administration);
-        chipGasoline = findViewById(R.id.chip_map_gasoline);
-        chipReligion = findViewById(R.id.chip_map_religion);
-        chipVehicleRepair = findViewById(R.id.chip_map_vehicle_repair);
-        chipOther = findViewById(R.id.chip_map_other);
+        Chip chipFood = findViewById(R.id.chip_map_food_drink);
+        Chip chipEntertainment = findViewById(R.id.chip_map_entertainment);
+        Chip chipEducation = findViewById(R.id.chip_map_education);
+        Chip chipAdministration = findViewById(R.id.chip_map_administration);
+        Chip chipGasoline = findViewById(R.id.chip_map_gasoline);
+        Chip chipReligion = findViewById(R.id.chip_map_religion);
+        Chip chipVehicleRepair = findViewById(R.id.chip_map_vehicle_repair);
+        Chip chipOther = findViewById(R.id.chip_map_other);
         chipFood.setOnCheckedChangeListener(chipCheckedListener);
         chipEntertainment.setOnCheckedChangeListener(chipCheckedListener);
         chipAdministration.setOnCheckedChangeListener(chipCheckedListener);
@@ -390,15 +422,23 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
         chips.add(chipReligion);
         chips.add(chipVehicleRepair);
         chips.add(chipOther);
+        // Make a showcase to show user how to use this app
+        ShowcaseConfig config = new ShowcaseConfig();
+        config.setDelay(500);
+        MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(this, "showcase");
+        sequence.setConfig(config);
+        sequence.addSequenceItem(fab_map, getString(R.string.showcase_fab_map), getString(R.string.got_it));
+        sequence.addSequenceItem(chipFood,
+                getString(R.string.showcase_chip), getString(R.string.got_it));
+        sequence.start();
     }
 
-    private void checkEmpty(){
+    private void checkEmpty() {
         final TextView emptyText = findViewById(R.id.text_empty_message);
-        if (adapter.getItemCount()==0) {
+        if (adapter.getItemCount() == 0) {
             scroll.setVisibility(View.GONE);
             emptyText.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             scroll.setVisibility(View.VISIBLE);
             emptyText.setVisibility(View.GONE);
         }
@@ -434,12 +474,13 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
         }
     }
 
-    private static class SelectedPlacesDeleteTask extends AsyncTask<Void, Void, Void>{
+    private static class SelectedPlacesDeleteTask extends AsyncTask<Void, Void, Void> {
         private WeakReference<ListActivity> activityReference;
 
-        SelectedPlacesDeleteTask(ListActivity context){
+        SelectedPlacesDeleteTask(ListActivity context) {
             activityReference = new WeakReference<>(context);
         }
+
         @Override
         protected Void doInBackground(Void... voids) {
             PlacesListManager.getInstance(activityReference.get()).deleteSelectedPlaces();
@@ -464,7 +505,8 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
     private static class DeleteTask extends AsyncTask<Void, Void, Void> {
         private WeakReference<ListActivity> activityReference;
         private int position;
-        DeleteTask(ListActivity context, int position){
+
+        DeleteTask(ListActivity context, int position) {
             this.position = position;
             activityReference = new WeakReference<>(context);
         }
