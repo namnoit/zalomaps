@@ -1,7 +1,6 @@
 package com.namnoit.zalomaps;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,7 +10,6 @@ import android.graphics.drawable.VectorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -32,6 +30,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -44,6 +44,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.TypeFilter;
@@ -78,6 +80,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         View.OnClickListener {
     private static final int AUTOCOMPLETE_REQUEST_CODE = 1;
     private static final int PERMISSION_REQUEST_CODE = 1;
+    public static String[] APP_PERMISSION = {
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
     private GoogleMap map;
     private PlacesListManager listManager;
     private FloatingActionButton fab;
@@ -86,11 +91,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private ArrayList<Marker> markers;
     private BottomSheetBehavior sheetBehavior;
     private boolean isMain = true;
-    private LocationManager locationManager;
-    private String[] appPermissions = {
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-    };
+    private FusedLocationProviderClient fusedLocationClient;
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -191,7 +192,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         religionButton.setOnClickListener(this);
         vehicleButton.setOnClickListener(this);
         otherButton.setOnClickListener(this);
-
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         sheetBehavior = BottomSheetBehavior.from(layoutBottomSheet);
 
@@ -222,23 +223,27 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                        checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    checkPermissions();
-                    return;
-                }
-                Location location = locationManager != null ? locationManager
-                        .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
-                if (location != null) {
-                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
-                    map.animateCamera(cameraUpdate, 1000, null);
-                } else {
-                    sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-                    Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
-                }
+                fusedLocationClient.getLastLocation()
+                        .addOnSuccessListener(new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                if (location == null) {
+                                    sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                                    Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
+                                    return;
+                                }
+                                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
+                                map.animateCamera(cameraUpdate, 1000, null);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                                Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
+                            }
+                        });
             }
         });
         listManager = PlacesListManager.getInstance(getApplicationContext());
@@ -261,7 +266,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             List<String> listPermissionNeeded = new ArrayList<>();
-            for (String permission : appPermissions) {
+            for (String permission : APP_PERMISSION) {
                 if (ContextCompat.checkSelfPermission(this, permission) !=
                         PackageManager.PERMISSION_GRANTED)
                     listPermissionNeeded.add(permission);
@@ -275,14 +280,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         // Zoom to my location
         map.setMyLocationEnabled(true);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Location location = locationManager != null ? locationManager
-                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
-        if (location != null) {
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
-            map.animateCamera(cameraUpdate, 1000, null);
-        }
+        Intent intent = getIntent();
+        int id = intent.getIntExtra(PlacesListAdapter.KEY_ID, -1);
+        if (id != -1) return;
+        fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location == null) {
+                    sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                    Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
+                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
+                map.animateCamera(cameraUpdate, 1000, null);
+            }
+        });
     }
 
     @Override
@@ -360,7 +373,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             textAddress.setText(place.getAddress());
             final int oldType = place.getType();
             textNotes.setText(place.getDescription());
-            switch (place.getType()) {
+            switch (oldType) {
                 case PlaceModel.TYPE_FOOD_DRINK:
                     chipGroup.check(R.id.chip_food_drink);
                     break;
@@ -515,7 +528,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 title = getResources().getString(R.string.other);
                 break;
         }
-        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        final LatLngBounds.Builder builder = new LatLngBounds.Builder();
         int markerCount = 0;
         for (Marker marker : markers) {
             PlaceModel place = (PlaceModel) marker.getTag();
@@ -537,26 +550,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Snackbar.make(parentView, R.string.alert_no_place_of_type, Snackbar.LENGTH_SHORT).show();
             return;
         }
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkPermissions();
-            return;
-        }
-        Location location = locationManager != null ? locationManager
-                .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
-        if (location != null) {
-            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-            builder.include(latLng);
-        }
         final int width = getResources().getDisplayMetrics().widthPixels;
         final int height = getResources().getDisplayMetrics().heightPixels;
         final int minMetric = Math.min(width, height);
         final int padding = (int) (minMetric * 0.25);
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
-        map.animateCamera(cameraUpdate, 1000, null);
-
-
+        fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                    builder.include(latLng);
+                }
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(builder.build(), padding);
+                map.animateCamera(cameraUpdate, 1000, null);
+            }
+        });
     }
 
     private static class InsertionTask extends AsyncTask<Void, Void, Void> {

@@ -14,18 +14,13 @@
     <string name="administration">Administration</string>
     <string name="gasoline">Gasoline</string>
     <string name="other">Other</string>
-    <string name="title_activity_bottom_nav">BottomNavActivity</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
     <string name="saved_places">Saved places</string>
-    <string name="maps">Maps</string>
+    <string name="maps" translatable="false">Maps</string>
     <string name="map">Map</string>
     <string name="delete">Delete</string>
     <string name="add_new_place">Add new place</string>
     <string name="address_not_found">Address was not found</string>
     <string name="delete_selected_places">All selected places will be deleted</string>
-    <string name="title_delete">Delete?</string>
     <string name="address">Address</string>
     <string name="search_here">Search here</string>
     <string name="show_by_type">Show by type</string>
@@ -50,4 +45,19 @@
     <string name="showcase_chip">Click these chips to filter your saved places</string>
     <string name="version">Version 1.0</string>
     <string name="app_credit">App was developed by Nam No</string>
+    <string name="title_delete">Delete?</string>
+
+    <string-array name="language_entries">
+        <item>English</item>
+        <item>Tiếng Việt</item>
+    </string-array>
+    <string-array name="language_values">
+        <item>@string/language_eng</item>
+        <item>@string/language_vie</item>
+    </string-array>
+    <string name="language">Language</string>
+    <string name="english">English</string>
+    <string name="vietnamese">Vietnamese</string>
+    <string name="language_eng" translatable="false">en</string>
+    <string name="language_vie" translatable="false">vi</string>
 </resources>

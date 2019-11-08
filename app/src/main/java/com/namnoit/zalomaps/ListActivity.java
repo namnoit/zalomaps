@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,6 +25,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -33,6 +33,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
@@ -59,6 +62,7 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
     private ActionMode mActionMode;
     private ExtendedFloatingActionButton fab_map;
     private Location myLocation;
+    private FusedLocationProviderClient fusedLocationClient;
     private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
@@ -170,14 +174,16 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
                 permissionsAccepted = false;
             }
         }
-        if (permissionsAccepted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) ==
-                        PackageManager.PERMISSION_GRANTED) {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            myLocation = locationManager != null ?
-                    locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
-            PlacesLoaderTask loaderTask = new PlacesLoaderTask(this);
-            loaderTask.execute();
+        if (permissionsAccepted) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    myLocation = location;
+                    PlacesLoaderTask loaderTask = new PlacesLoaderTask(ListActivity.this);
+                    loaderTask.execute();
+                }
+            });
         } else {
             new MaterialAlertDialogBuilder(this, R.style.MaterialDialogStyle)
                     .setTitle(R.string.title_permission_denied)
@@ -212,42 +218,40 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
             getWindow().setStatusBarColor(Color.parseColor("#b0bec5"));
         }
         Objects.requireNonNull(getSupportActionBar()).setElevation(0f);
-        getLocation();
-
+        checkPermissions();
     }
 
-    private void getLocation() {
+    private void checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
-                        PackageManager.PERMISSION_GRANTED) {
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MapActivity.APP_PERMISSION,
                     PERMISSION_REQUEST_CODE);
         } else {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            myLocation = locationManager != null ? locationManager
-                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
-            PlacesLoaderTask loaderTask = new PlacesLoaderTask(this);
-            loaderTask.execute();
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+            fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    myLocation = location;
+                    PlacesLoaderTask loaderTask = new PlacesLoaderTask(ListActivity.this);
+                    loaderTask.execute();
+                }
+            });
         }
     }
 
     public void updateDistance() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
-                        PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSION_REQUEST_CODE);
-        } else {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            myLocation = locationManager != null ? locationManager
-                    .getLastKnownLocation(LocationManager.NETWORK_PROVIDER) : null;
-            if (myLocation != null) {
-                listManager.updateDistances(myLocation);
-                adapter.notifyDataSetChanged();
+        fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                myLocation = location;
+                if (myLocation != null) {
+                    listManager.updateDistances(myLocation);
+                    adapter.notifyDataSetChanged();
+                }
             }
-        }
+        });
     }
 
     @Override
