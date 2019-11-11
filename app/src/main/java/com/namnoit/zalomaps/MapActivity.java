@@ -227,7 +227,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         .addOnSuccessListener(new OnSuccessListener<Location>() {
                             @Override
                             public void onSuccess(Location location) {
-                                if (location == null) {
+                                if (location == null ||
+                                        location.getLatitude()==0 && location.getLongitude()==0) {
                                     sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                                     Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
                                     return;
@@ -286,7 +287,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                if (location == null) {
+                if (location == null ||
+                        location.getLatitude()==0 && location.getLongitude()==0) {
                     sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                     Snackbar.make(parentView, R.string.alert_no_location, Snackbar.LENGTH_SHORT).show();
                     return;
@@ -557,7 +559,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         fusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                if (location != null) {
+                if (location != null &&
+                        location.getLatitude() != 0 && location.getLongitude() != 0) {
                     LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                     builder.include(latLng);
                 }

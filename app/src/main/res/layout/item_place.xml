@@ -60,7 +60,7 @@
     <TextView
         android:id="@+id/text_item_category"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:lines="1"

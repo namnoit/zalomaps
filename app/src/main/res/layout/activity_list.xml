@@ -34,7 +34,7 @@
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Display1"
         android:textSize="18sp"
-        android:visibility="visible" />
+        android:visibility="gone" />
 
     <include
         android:id="@+id/layout_list"

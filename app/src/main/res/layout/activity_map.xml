@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         app:cameraTargetLat="10.758168"
-        app:cameraTargetLng="-253.253904"
+        app:cameraTargetLng="106.746096"
         app:cameraZoom="15"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

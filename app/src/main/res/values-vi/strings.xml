@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Zalo Maps</string>
     <string name="about_app">Về ứng dụng</string>
     <string name="add_new_place">Thêm địa điểm</string>
     <string name="address">Địa chỉ</string>

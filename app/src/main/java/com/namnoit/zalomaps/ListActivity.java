@@ -247,7 +247,7 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
             public void onSuccess(Location location) {
                 myLocation = location;
                 if (myLocation != null) {
-                    listManager.updateDistances(myLocation);
+                    listManager.updateDistances(myLocation, getApplicationContext());
                     adapter.notifyDataSetChanged();
                 }
             }
@@ -394,11 +394,17 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
             }
         });
         final SwipeRefreshLayout swipe = findViewById(R.id.swipe_refresh);
+        swipe.setColorSchemeColors(getResources().getColor(R.color.colorAccent));
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                updateDistance();
-                swipe.setRefreshing(false);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateDistance();
+                        swipe.setRefreshing(false);
+                    }
+                }).start();
             }
         });
         Chip chipFood = findViewById(R.id.chip_map_food_drink);
@@ -458,7 +464,7 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
         @Override
         protected PlacesListManager doInBackground(Void... voids) {
             PlacesListManager listManager = PlacesListManager.getInstance(activityReference.get());
-            listManager.updateDistances(activityReference.get().myLocation);
+            listManager.updateDistances(activityReference.get().myLocation, activityReference.get());
             return listManager;
         }
 
@@ -473,8 +479,16 @@ public class ListActivity extends AppCompatActivity implements SwipeController.O
         protected void onPostExecute(PlacesListManager placesListManager) {
             ListActivity activity = activityReference.get();
             activity.findViewById(R.id.progress_bar_list).setVisibility(View.GONE);
-            activity.findViewById(R.id.layout_list).setVisibility(View.VISIBLE);
-            activity.setUp(placesListManager);
+            if (placesListManager.size() > 0) {
+                activity.findViewById(R.id.text_empty_message).setVisibility(View.GONE);
+                activity.findViewById(R.id.layout_list).setVisibility(View.VISIBLE);
+                activity.setUp(placesListManager);
+            }
+            else {
+                activity.findViewById(R.id.text_empty_message).setVisibility(View.VISIBLE);
+                activity.findViewById(R.id.layout_list).setVisibility(View.GONE);
+                activity.setUp(placesListManager);
+            }
         }
     }
 
